@@ -1,0 +1,23 @@
+{
+  "name": "fisbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OctoMeep/fisbot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OctoMeep/fisbot/issues"
+  },
+  "homepage": "https://github.com/OctoMeep/fisbot#readme",
+  "dependencies": {
+    "@types/node": "^12.0.10",
+    "discord.js": "^11.5.1"
+  }
+}
