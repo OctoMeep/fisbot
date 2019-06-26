@@ -36,44 +36,32 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 exports.__esModule = true;
-var fs_1 = require("fs");
-var config = require("./config.json");
-exports.getCourses = function (server) { return __awaiter(_this, void 0, void 0, function () {
-    var result, filePath, data, err_1;
+var fs = require("fs");
+var fsp = fs.promises;
+exports.ensureDir = function (dirPath) { return __awaiter(_this, void 0, void 0, function () {
+    var dirStats, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                result = [];
-                filePath = config.savePath + server.id + "/courses";
-                _a.label = 1;
+                _a.trys.push([0, 2, 6, 7]);
+                return [4 /*yield*/, fsp.stat(dirPath)];
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4 /*yield*/, fs_1.promises.readFile(filePath, "utf-8")];
+                dirStats = _a.sent();
+                return [3 /*break*/, 7];
             case 2:
-                data = _a.sent();
-                return [3 /*break*/, 5];
-            case 3:
                 err_1 = _a.sent();
-                if (err_1.code == "ENOENT")
-                    data = "";
-                else
-                    throw err_1;
+                if (!(err_1.code == "ENOENT")) return [3 /*break*/, 4];
+                return [4 /*yield*/, fsp.mkdir(dirPath)];
+            case 3:
+                _a.sent();
                 return [3 /*break*/, 5];
-            case 4:
-                console.log(data);
-                if (data)
-                    data.split("\n").forEach(function (line) {
-                        var elements = line.split("\t");
-                        if (elements.length !== 3)
-                            throw new Error("Invalid course definition file! Each row must have 3 columns.");
-                        result.push({
-                            name: elements[0],
-                            group: +elements[1],
-                            structure: +elements[2]
-                        });
-                    });
-                return [2 /*return*/, result];
-            case 5: return [2 /*return*/];
+            case 4: throw err_1;
+            case 5: return [3 /*break*/, 7];
+            case 6:
+                if (!dirStats.isDirectory)
+                    throw new Error("Path exists and is not a directory!");
+                return [7 /*endfinally*/];
+            case 7: return [2 /*return*/];
         }
     });
 }); };
