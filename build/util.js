@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 exports.__esModule = true;
+var Discord = require("discord.js");
 var fs = require("fs");
 var fsp = fs.promises;
 exports.ensureDir = function (dirPath) { return __awaiter(_this, void 0, void 0, function () {
@@ -62,6 +63,63 @@ exports.ensureDir = function (dirPath) { return __awaiter(_this, void 0, void 0,
                     throw new Error("Path exists and is not a directory!");
                 return [7 /*endfinally*/];
             case 7: return [2 /*return*/];
+        }
+    });
+}); };
+exports.ensureRole = function (server, name) { return __awaiter(_this, void 0, void 0, function () {
+    var role;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, server.roles.find(function (r) { return r.name == name; })];
+            case 1:
+                role = _a.sent();
+                if (!role) return [3 /*break*/, 2];
+                return [2 /*return*/, role];
+            case 2: return [4 /*yield*/, server.createRole({
+                    name: name,
+                    mentionable: true
+                })];
+            case 3: return [2 /*return*/, _a.sent()];
+        }
+    });
+}); };
+exports.ensureChannel = function (server, name, category, roles, readOnly) { return __awaiter(_this, void 0, void 0, function () {
+    var channel, permissionOverwrites;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, server.channels.find(function (c) { return c.name == name; })];
+            case 1:
+                channel = _a.sent();
+                if (channel) {
+                    if (!(channel instanceof Discord.TextChannel))
+                        throw new Error("Channel " + name + " exists but is not a text channel.");
+                    return [2 /*return*/, channel];
+                }
+                permissionOverwrites = [];
+                if (!roles.includes("*")) {
+                    permissionOverwrites.push({
+                        id: server.roles.find(function (r) { return r.name == "@everyone"; }),
+                        deny: Discord.Permissions.FLAGS.VIEW_CHANNEL
+                    });
+                    roles.forEach(function (role) {
+                        var serverRole = server.roles.find(function (r) { return r.name == role; });
+                        console.log(serverRole);
+                        permissionOverwrites.push({
+                            id: serverRole,
+                            allow: Discord.Permissions.FLAGS.VIEW_CHANNEL
+                        });
+                    });
+                }
+                return [4 /*yield*/, server.createChannel(name, {
+                        type: "text",
+                        permissionOverwrites: permissionOverwrites
+                    })];
+            case 2:
+                channel = _a.sent();
+                console.log(channel);
+                if (!(channel instanceof Discord.TextChannel))
+                    throw new Error("This should never happen");
+                return [2 /*return*/, channel];
         }
     });
 }); };

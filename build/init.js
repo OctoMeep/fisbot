@@ -38,13 +38,13 @@ var _this = this;
 exports.__esModule = true;
 var fs_1 = require("fs");
 var config = require("./config.json");
-exports.getCourses = function (server) { return __awaiter(_this, void 0, void 0, function () {
+exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0, function () {
     var result, filePath, data, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 result = [];
-                filePath = config.savePath + server.id + "/courses";
+                filePath = config.savePath + server.id + "/channels";
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, 4, 5]);
@@ -60,17 +60,35 @@ exports.getCourses = function (server) { return __awaiter(_this, void 0, void 0,
                     throw err_1;
                 return [3 /*break*/, 5];
             case 4:
-                console.log(data);
                 if (data)
-                    data.split("\n").forEach(function (line) {
+                    data.replace(/\r/g, "").split("\n").forEach(function (line) {
                         var elements = line.split("\t");
-                        if (elements.length !== 3)
-                            throw new Error("Invalid course definition file! Each row must have 3 columns.");
-                        result.push({
-                            name: elements[0],
-                            group: +elements[1],
-                            structure: +elements[2]
-                        });
+                        if (elements.length == 1)
+                            return;
+                        console.log(elements);
+                        if (elements.length !== 4)
+                            throw new Error("Invalid channel definition file! Each row must have 4 columns.");
+                        var name = elements[0];
+                        var category = +elements[1];
+                        var structure = +elements[2];
+                        if ([0, 1, 2].includes(structure)) { // This is a special channel
+                            result.push({
+                                name: name,
+                                category: category,
+                                structure: structure,
+                                roles: elements[3].split(",")
+                            });
+                        }
+                        else if ([3, 4, 5].includes(structure)) { // This is a course
+                            result.push({
+                                name: name,
+                                category: category,
+                                structure: structure,
+                                group: +elements[3]
+                            });
+                        }
+                        else
+                            throw new Error("Invalid channel definition file! Structure (3rd column) cannot be greater than 5.");
                     });
                 return [2 /*return*/, result];
             case 5: return [2 /*return*/];
