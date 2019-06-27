@@ -66,7 +66,30 @@ exports.ensureDir = function (dirPath) { return __awaiter(_this, void 0, void 0,
         }
     });
 }); };
-exports.ensureRole = function (server, name) { return __awaiter(_this, void 0, void 0, function () {
+exports.ensureCategory = function (server, name) { return __awaiter(_this, void 0, void 0, function () {
+    var category;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, server.channels.find(function (c) { return c.name == name; })];
+            case 1:
+                category = _a.sent();
+                if (category) {
+                    if (!(category instanceof Discord.CategoryChannel))
+                        throw new Error("Channel " + name + " exists but is not a category channel.");
+                    return [2 /*return*/, category];
+                }
+                return [4 /*yield*/, server.createChannel(name, {
+                        type: "category"
+                    })];
+            case 2:
+                category = _a.sent();
+                if (!(category instanceof Discord.CategoryChannel))
+                    throw new Error("This should never happen");
+                return [2 /*return*/, category];
+        }
+    });
+}); };
+exports.ensureRole = function (server, name, color) { return __awaiter(_this, void 0, void 0, function () {
     var role;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -77,14 +100,15 @@ exports.ensureRole = function (server, name) { return __awaiter(_this, void 0, v
                 return [2 /*return*/, role];
             case 2: return [4 /*yield*/, server.createRole({
                     name: name,
-                    mentionable: true
+                    mentionable: true,
+                    color: color
                 })];
             case 3: return [2 /*return*/, _a.sent()];
         }
     });
 }); };
 exports.ensureChannel = function (server, name, category, roles, readOnly) { return __awaiter(_this, void 0, void 0, function () {
-    var channel, permissionOverwrites;
+    var channel, permissionOverwrites, everyone;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, server.channels.find(function (c) { return c.name == name; })];
@@ -96,14 +120,19 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                     return [2 /*return*/, channel];
                 }
                 permissionOverwrites = [];
+                everyone = server.roles.find(function (r) { return r.name == "@everyone"; });
+                if (readOnly)
+                    permissionOverwrites.push({
+                        id: everyone,
+                        deny: Discord.Permissions.FLAGS.SEND_MESSAGES
+                    });
                 if (!roles.includes("*")) {
                     permissionOverwrites.push({
-                        id: server.roles.find(function (r) { return r.name == "@everyone"; }),
+                        id: everyone,
                         deny: Discord.Permissions.FLAGS.VIEW_CHANNEL
                     });
                     roles.forEach(function (role) {
                         var serverRole = server.roles.find(function (r) { return r.name == role; });
-                        console.log(serverRole);
                         permissionOverwrites.push({
                             id: serverRole,
                             allow: Discord.Permissions.FLAGS.VIEW_CHANNEL
@@ -112,11 +141,11 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                 }
                 return [4 /*yield*/, server.createChannel(name, {
                         type: "text",
-                        permissionOverwrites: permissionOverwrites
+                        permissionOverwrites: permissionOverwrites,
+                        parent: category
                     })];
             case 2:
                 channel = _a.sent();
-                console.log(channel);
                 if (!(channel instanceof Discord.TextChannel))
                     throw new Error("This should never happen");
                 return [2 /*return*/, channel];

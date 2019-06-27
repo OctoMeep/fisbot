@@ -33,13 +33,20 @@ export default class ServerHandler {
 	async initialize(message: Discord.Message) {
 		if (!(message.channel instanceof Discord.TextChannel)) return;
 		this.active = false;
-		let channels;
+		let categories = [];
+		let categoryChannels = [];
+		let channels = [];
 		const dirPath = config.savePath + this.server.id;
 		try {
 			await util.ensureDir(config.savePath);
 			await util.ensureDir(dirPath);
+			categories = await init.getCategories(this.server);
 			channels = await init.getChannels(this.server);
-			console.log(channels);
+			for (let category of categories) {
+				const categoryChannel = await util.ensureCategory(this.server, category);
+				console.log(`Created category ${category}`);
+				categoryChannels.push(categoryChannel);
+			}
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 3:
@@ -48,9 +55,9 @@ export default class ServerHandler {
 						break;
 					case 4:
 					case 5:
-						await util.ensureRole(this.server, channel.name + "-sl");
+						await util.ensureRole(this.server, channel.name + "-sl", "BLUE");
 						console.log(`Created role ${channel.name + "-sl"}`);
-						await util.ensureRole(this.server, channel.name + "-hl");
+						await util.ensureRole(this.server, channel.name + "-hl", "GREEN");
 						console.log(`Created role ${channel.name + "-hl"}`);
 				}
 			}
@@ -58,32 +65,32 @@ export default class ServerHandler {
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 0:
-						await util.ensureChannel(this.server, channel.name, channel.category, channel.roles, false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[categoryChannels[channel.category]], channel.roles, false);
 						console.log(`Created channel ${channel.name}`);
 						break;
 					case 1:
-						await util.ensureChannel(this.server, channel.name, channel.category, channel.roles, true);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
 						console.log(`Created channel ${channel.name}`);
 						break;
 					case 2:
-						let notificationChannel = await util.ensureChannel(this.server, channel.name, channel.category, channel.roles, true);
+						let notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
 						console.log(`Created channel ${channel.name}`);
 						this.notificationChannels.push(notificationChannel);
 						break;
 					case 3:
-						await util.ensureChannel(this.server, channel.name, channel.category, [channel.name], false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false);
 						console.log(`Created channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 4:
-						await util.ensureChannel(this.server, channel.name, channel.category, [channel.name + "-sl", channel.name + "-hl"], false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false);
 						console.log(`Created channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 5:
-						await util.ensureChannel(this.server, channel.name + "-sl", channel.category, [channel.name + "-sl"], false);
+						await util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false);
 						console.log(`Created channel ${channel.name + "-sl"}`);
-						await util.ensureChannel(this.server, channel.name + "-hl", channel.category, [channel.name + "-hl"], false);
+						await util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false);
 						console.log(`Created channel ${channel.name + "-hl"}`);
 						this.courses.push(channel);
 						break;

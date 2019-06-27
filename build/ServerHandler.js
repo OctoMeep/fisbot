@@ -73,119 +73,139 @@ var ServerHandler = /** @class */ (function () {
     };
     ServerHandler.prototype.initialize = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var channels, dirPath, _i, channels_1, channel, _a, _b, channels_2, channel, _c, notificationChannel, err_1;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var categories, categoryChannels, channels, dirPath, _i, categories_1, category, categoryChannel, _a, channels_1, channel, _b, _c, channels_2, channel, _d, notificationChannel, err_1;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         if (!(message.channel instanceof Discord.TextChannel))
                             return [2 /*return*/];
                         this.active = false;
+                        categories = [];
+                        categoryChannels = [];
+                        channels = [];
                         dirPath = config.savePath + this.server.id;
-                        _d.label = 1;
+                        _e.label = 1;
                     case 1:
-                        _d.trys.push([1, 29, , 30]);
+                        _e.trys.push([1, 34, , 35]);
                         return [4 /*yield*/, util.ensureDir(config.savePath)];
                     case 2:
-                        _d.sent();
+                        _e.sent();
                         return [4 /*yield*/, util.ensureDir(dirPath)];
                     case 3:
-                        _d.sent();
-                        return [4 /*yield*/, init.getChannels(this.server)];
+                        _e.sent();
+                        return [4 /*yield*/, init.getCategories(this.server)];
                     case 4:
-                        channels = _d.sent();
-                        console.log(channels);
-                        _i = 0, channels_1 = channels;
-                        _d.label = 5;
+                        categories = _e.sent();
+                        return [4 /*yield*/, init.getChannels(this.server)];
                     case 5:
-                        if (!(_i < channels_1.length)) return [3 /*break*/, 12];
-                        channel = channels_1[_i];
-                        _a = channel.structure;
-                        switch (_a) {
-                            case 3: return [3 /*break*/, 6];
-                            case 4: return [3 /*break*/, 8];
-                            case 5: return [3 /*break*/, 8];
-                        }
-                        return [3 /*break*/, 11];
-                    case 6: return [4 /*yield*/, util.ensureRole(this.server, channel.name)];
+                        channels = _e.sent();
+                        _i = 0, categories_1 = categories;
+                        _e.label = 6;
+                    case 6:
+                        if (!(_i < categories_1.length)) return [3 /*break*/, 9];
+                        category = categories_1[_i];
+                        return [4 /*yield*/, util.ensureCategory(this.server, category)];
                     case 7:
-                        _d.sent();
-                        console.log("Created role " + channel.name);
-                        return [3 /*break*/, 11];
-                    case 8: return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-sl")];
-                    case 9:
-                        _d.sent();
-                        console.log("Created role " + (channel.name + "-sl"));
-                        return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-hl")];
-                    case 10:
-                        _d.sent();
-                        console.log("Created role " + (channel.name + "-hl"));
-                        _d.label = 11;
-                    case 11:
+                        categoryChannel = _e.sent();
+                        console.log("Created category " + category);
+                        categoryChannels.push(categoryChannel);
+                        _e.label = 8;
+                    case 8:
                         _i++;
-                        return [3 /*break*/, 5];
-                    case 12:
-                        _b = 0, channels_2 = channels;
-                        _d.label = 13;
-                    case 13:
-                        if (!(_b < channels_2.length)) return [3 /*break*/, 28];
-                        channel = channels_2[_b];
-                        _c = channel.structure;
-                        switch (_c) {
-                            case 0: return [3 /*break*/, 14];
-                            case 1: return [3 /*break*/, 16];
-                            case 2: return [3 /*break*/, 18];
-                            case 3: return [3 /*break*/, 20];
-                            case 4: return [3 /*break*/, 22];
-                            case 5: return [3 /*break*/, 24];
+                        return [3 /*break*/, 6];
+                    case 9:
+                        _a = 0, channels_1 = channels;
+                        _e.label = 10;
+                    case 10:
+                        if (!(_a < channels_1.length)) return [3 /*break*/, 17];
+                        channel = channels_1[_a];
+                        _b = channel.structure;
+                        switch (_b) {
+                            case 3: return [3 /*break*/, 11];
+                            case 4: return [3 /*break*/, 13];
+                            case 5: return [3 /*break*/, 13];
                         }
-                        return [3 /*break*/, 27];
-                    case 14: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, channel.category, channel.roles, false)];
+                        return [3 /*break*/, 16];
+                    case 11: return [4 /*yield*/, util.ensureRole(this.server, channel.name)];
+                    case 12:
+                        _e.sent();
+                        console.log("Created role " + channel.name);
+                        return [3 /*break*/, 16];
+                    case 13: return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-sl", "BLUE")];
+                    case 14:
+                        _e.sent();
+                        console.log("Created role " + (channel.name + "-sl"));
+                        return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-hl", "GREEN")];
                     case 15:
-                        _d.sent();
-                        console.log("Created channel " + channel.name);
-                        return [3 /*break*/, 27];
-                    case 16: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, channel.category, channel.roles, true)];
+                        _e.sent();
+                        console.log("Created role " + (channel.name + "-hl"));
+                        _e.label = 16;
+                    case 16:
+                        _a++;
+                        return [3 /*break*/, 10];
                     case 17:
-                        _d.sent();
+                        _c = 0, channels_2 = channels;
+                        _e.label = 18;
+                    case 18:
+                        if (!(_c < channels_2.length)) return [3 /*break*/, 33];
+                        channel = channels_2[_c];
+                        _d = channel.structure;
+                        switch (_d) {
+                            case 0: return [3 /*break*/, 19];
+                            case 1: return [3 /*break*/, 21];
+                            case 2: return [3 /*break*/, 23];
+                            case 3: return [3 /*break*/, 25];
+                            case 4: return [3 /*break*/, 27];
+                            case 5: return [3 /*break*/, 29];
+                        }
+                        return [3 /*break*/, 32];
+                    case 19: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[categoryChannels[channel.category]], channel.roles, false)];
+                    case 20:
+                        _e.sent();
                         console.log("Created channel " + channel.name);
-                        return [3 /*break*/, 27];
-                    case 18: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, channel.category, channel.roles, true)];
-                    case 19:
-                        notificationChannel = _d.sent();
+                        return [3 /*break*/, 32];
+                    case 21: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true)];
+                    case 22:
+                        _e.sent();
+                        console.log("Created channel " + channel.name);
+                        return [3 /*break*/, 32];
+                    case 23: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true)];
+                    case 24:
+                        notificationChannel = _e.sent();
                         console.log("Created channel " + channel.name);
                         this.notificationChannels.push(notificationChannel);
-                        return [3 /*break*/, 27];
-                    case 20: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, channel.category, [channel.name], false)];
-                    case 21:
-                        _d.sent();
-                        console.log("Created channel " + channel.name);
-                        this.courses.push(channel);
-                        return [3 /*break*/, 27];
-                    case 22: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, channel.category, [channel.name + "-sl", channel.name + "-hl"], false)];
-                    case 23:
-                        _d.sent();
-                        console.log("Created channel " + channel.name);
-                        this.courses.push(channel);
-                        return [3 /*break*/, 27];
-                    case 24: return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-sl", channel.category, [channel.name + "-sl"], false)];
-                    case 25:
-                        _d.sent();
-                        console.log("Created channel " + (channel.name + "-sl"));
-                        return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-hl", channel.category, [channel.name + "-hl"], false)];
+                        return [3 /*break*/, 32];
+                    case 25: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false)];
                     case 26:
-                        _d.sent();
+                        _e.sent();
+                        console.log("Created channel " + channel.name);
+                        this.courses.push(channel);
+                        return [3 /*break*/, 32];
+                    case 27: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false)];
+                    case 28:
+                        _e.sent();
+                        console.log("Created channel " + channel.name);
+                        this.courses.push(channel);
+                        return [3 /*break*/, 32];
+                    case 29: return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false)];
+                    case 30:
+                        _e.sent();
+                        console.log("Created channel " + (channel.name + "-sl"));
+                        return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false)];
+                    case 31:
+                        _e.sent();
                         console.log("Created channel " + (channel.name + "-hl"));
                         this.courses.push(channel);
-                        return [3 /*break*/, 27];
-                    case 27:
-                        _b++;
-                        return [3 /*break*/, 13];
-                    case 28: return [3 /*break*/, 30];
-                    case 29:
-                        err_1 = _d.sent();
+                        return [3 /*break*/, 32];
+                    case 32:
+                        _c++;
+                        return [3 /*break*/, 18];
+                    case 33: return [3 /*break*/, 35];
+                    case 34:
+                        err_1 = _e.sent();
                         notifications.fatal(err_1, message.channel);
                         return [2 /*return*/];
-                    case 30:
+                    case 35:
                         this.initialized = true;
                         this.active = true;
                         return [2 /*return*/];

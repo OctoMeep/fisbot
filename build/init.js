@@ -38,28 +38,35 @@ var _this = this;
 exports.__esModule = true;
 var fs_1 = require("fs");
 var config = require("./config.json");
+var readFileIfExists = function (filePath) { return __awaiter(_this, void 0, void 0, function () {
+    var data, err_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, fs_1.promises.readFile(filePath, "utf-8")];
+            case 1: return [2 /*return*/, _a.sent()];
+            case 2:
+                err_1 = _a.sent();
+                if (err_1.code == "ENOENT")
+                    return [2 /*return*/, ""];
+                else
+                    throw err_1;
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
 exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0, function () {
-    var result, filePath, data, err_1;
+    var result, filePath, data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 result = [];
                 filePath = config.savePath + server.id + "/channels";
-                _a.label = 1;
+                return [4 /*yield*/, readFileIfExists(filePath)];
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4 /*yield*/, fs_1.promises.readFile(filePath, "utf-8")];
-            case 2:
                 data = _a.sent();
-                return [3 /*break*/, 5];
-            case 3:
-                err_1 = _a.sent();
-                if (err_1.code == "ENOENT")
-                    data = "";
-                else
-                    throw err_1;
-                return [3 /*break*/, 5];
-            case 4:
                 if (data)
                     data.replace(/\r/g, "").split("\n").forEach(function (line) {
                         var elements = line.split("\t");
@@ -91,7 +98,23 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
                             throw new Error("Invalid channel definition file! Structure (3rd column) cannot be greater than 5.");
                     });
                 return [2 /*return*/, result];
-            case 5: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getCategories = function (server) { return __awaiter(_this, void 0, void 0, function () {
+    var filePath, data;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                filePath = config.savePath + server.id + "/categories";
+                return [4 /*yield*/, readFileIfExists(filePath)];
+            case 1:
+                data = _a.sent();
+                if (data)
+                    return [2 /*return*/, data.replace(/\r/g, "").split("\n").filter(function (line) { return line.length != 0; })];
+                else
+                    return [2 /*return*/, []];
+                return [2 /*return*/];
         }
     });
 }); };
