@@ -69,10 +69,11 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
                 data = _a.sent();
                 if (data)
                     data.replace(/\r/g, "").split("\n").forEach(function (line) {
+                        if (line.length == 0 || line.startsWith("#"))
+                            return;
                         var elements = line.split("\t");
                         if (elements.length == 1)
                             return;
-                        console.log(elements);
                         if (elements.length !== 4)
                             throw new Error("Invalid channel definition file! Each row must have 4 columns.");
                         var name = elements[0];
@@ -111,7 +112,7 @@ exports.getCategories = function (server) { return __awaiter(_this, void 0, void
             case 1:
                 data = _a.sent();
                 if (data)
-                    return [2 /*return*/, data.replace(/\r/g, "").split("\n").filter(function (line) { return line.length != 0; })];
+                    return [2 /*return*/, data.replace(/\r/g, "").split("\n").filter(function (line) { return line.length != 0 && !line.startsWith("#"); })];
                 else
                     return [2 /*return*/, []];
                 return [2 /*return*/];

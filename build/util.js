@@ -139,6 +139,7 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                         });
                     });
                 }
+                console.log("Creating " + name + " with parent" + category.name);
                 return [4 /*yield*/, server.createChannel(name, {
                         type: "text",
                         permissionOverwrites: permissionOverwrites,

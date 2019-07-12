@@ -44,54 +44,54 @@ export default class ServerHandler {
 			channels = await init.getChannels(this.server);
 			for (let category of categories) {
 				const categoryChannel = await util.ensureCategory(this.server, category);
-				console.log(`Created category ${category}`);
+				console.log(`Ensured category ${category}`);
 				categoryChannels.push(categoryChannel);
 			}
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 3:
 						await util.ensureRole(this.server, channel.name);
-						console.log(`Created role ${channel.name}`);
+						console.log(`Ensured role ${channel.name}`);
 						break;
 					case 4:
 					case 5:
 						await util.ensureRole(this.server, channel.name + "-sl", "BLUE");
-						console.log(`Created role ${channel.name + "-sl"}`);
+						console.log(`Ensured role ${channel.name + "-sl"}`);
 						await util.ensureRole(this.server, channel.name + "-hl", "GREEN");
-						console.log(`Created role ${channel.name + "-hl"}`);
+						console.log(`Ensured role ${channel.name + "-hl"}`);
 				}
 			}
 
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 0:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[categoryChannels[channel.category]], channel.roles, false);
-						console.log(`Created channel ${channel.name}`);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false);
+						console.log(`Ensured channel ${channel.name}`);
 						break;
 					case 1:
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
-						console.log(`Created channel ${channel.name}`);
+						console.log(`Ensured channel ${channel.name}`);
 						break;
 					case 2:
 						let notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
-						console.log(`Created channel ${channel.name}`);
+						console.log(`Ensured channel ${channel.name}`);
 						this.notificationChannels.push(notificationChannel);
 						break;
 					case 3:
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false);
-						console.log(`Created channel ${channel.name}`);
+						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 4:
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false);
-						console.log(`Created channel ${channel.name}`);
+						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 5:
 						await util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false);
-						console.log(`Created channel ${channel.name + "-sl"}`);
+						console.log(`Ensured channel ${channel.name + "-sl"}`);
 						await util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false);
-						console.log(`Created channel ${channel.name + "-hl"}`);
+						console.log(`Ensured channel ${channel.name + "-hl"}`);
 						this.courses.push(channel);
 						break;
 
