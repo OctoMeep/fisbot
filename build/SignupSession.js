@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Prompt_1 = require("./Prompt");
 var SignupSession = /** @class */ (function () {
     function SignupSession(client, user, serverHandlers) {
@@ -55,7 +55,7 @@ var SignupSession = /** @class */ (function () {
         this.subjectGroups = [];
         this.ib = false;
         this.courses = [];
-        this.currentPrompt = new Prompt_1["default"](this.user, "Which server would you like to sign up for?", this.servers.map(function (s) { return s.name; }));
+        this.currentPrompt = new Prompt_1.default(this.user, "Which server would you like to sign up for?", this.servers.map(function (s) { return s.name; }));
         this.currentPrompt.ask();
     }
     SignupSession.prototype.process = function (message) {
@@ -81,9 +81,7 @@ var SignupSession = /** @class */ (function () {
                                 [1, 2, 3, 4, 5, 6].forEach(function (n) {
                                     _this.subjectGroups[n - 1] = courses_1.filter(function (c) { return c.group == n; });
                                 });
-                                console.log(this.subjectGroups);
-                                console.log(courses_1);
-                                this.currentPrompt = new Prompt_1["default"](this.user, "Are you taking the full IB?", ["Yes", "No"]);
+                                this.currentPrompt = new Prompt_1.default(this.user, "Are you taking the full IB?", ["Yes", "No"]);
                                 this.state = 1;
                                 break;
                             case 1:
@@ -94,7 +92,9 @@ var SignupSession = /** @class */ (function () {
                                 break;
                             case 2:
                                 this.courses.push({ course: this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; }), hl: false });
-                                if (this.courses[this.courses.length - 1].strcture == 3) { // No hl
+                                console.log(this.courses[this.courses.length - 1]);
+                                if (this.courses[this.courses.length - 1].course.structure == 3) { // No hl
+                                    console.log("skip");
                                     if (this.extra) {
                                         if (this.ib) { // This was group 6
                                             this.done();
@@ -106,7 +106,6 @@ var SignupSession = /** @class */ (function () {
                                             break;
                                         }
                                     }
-                                    this.group++;
                                     do
                                         this.group++;
                                     while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
@@ -120,7 +119,7 @@ var SignupSession = /** @class */ (function () {
                                     }
                                     break;
                                 }
-                                this.currentPrompt = new Prompt_1["default"](this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
+                                this.currentPrompt = new Prompt_1.default(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
                                 this.state = 3;
                                 break;
                             case 3:
@@ -138,7 +137,6 @@ var SignupSession = /** @class */ (function () {
                                 }
                                 do {
                                     this.group++;
-                                    console.log("Group is now " + this.group);
                                 } while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
                                 if (this.group == 6) {
                                     this.promptExtra();
@@ -182,11 +180,11 @@ var SignupSession = /** @class */ (function () {
         var options = this.subjectGroups[this.group - 1].map(function (c) { return c.name; }).slice();
         if (!this.ib)
             options.push("I don't take any of these");
-        this.currentPrompt = new Prompt_1["default"](this.user, "Which group " + this.group + " subject do you take?", options);
+        this.currentPrompt = new Prompt_1.default(this.user, "Which group " + this.group + " subject do you take?", options);
     };
     SignupSession.prototype.promptExtra = function () {
         if (this.ib) {
-            this.currentPrompt = new Prompt_1["default"](this.user, "Do you take a group 6 subject or a second subject from another group?", [
+            this.currentPrompt = new Prompt_1.default(this.user, "Do you take a group 6 subject or a second subject from another group?", [
                 "I take a second group 1 subject",
                 "I take a second group 2 subject",
                 "I take a second group 3 subject",
@@ -196,7 +194,7 @@ var SignupSession = /** @class */ (function () {
             ]);
         }
         else {
-            this.currentPrompt = new Prompt_1["default"](this.user, "Do you another subject?", [
+            this.currentPrompt = new Prompt_1.default(this.user, "Do you another subject?", [
                 "I take another group 1 subject",
                 "I take another group 2 subject",
                 "I take another group 3 subject",
@@ -217,4 +215,4 @@ var SignupSession = /** @class */ (function () {
     };
     return SignupSession;
 }());
-exports["default"] = SignupSession;
+exports.default = SignupSession;

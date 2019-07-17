@@ -1,8 +1,11 @@
 {
 	"compilerOptions": {
+
 		"outDir": "build",
 		"rootDir": "src",
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"target": "ES5",
+		"moduleResolution": "node"
 	},
 	"include": [
 		"src/**/*"

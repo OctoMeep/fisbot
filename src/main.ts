@@ -19,6 +19,10 @@ client.on("ready", () => {
 	});
 	dm = new DMHandler(client, serverHandlers);
 	initialized = true;
+
+	serverHandlers.forEach((h: ServerHandler) => {
+		h.initialize();
+	});
 });
 
 client.on("message", (message: Message) => {
@@ -26,4 +30,4 @@ client.on("message", (message: Message) => {
 		if (message.guild == serverHandler.server) serverHandler.handleMessage(message); 
 	});
 	else dm.handle(message);
-})
+});

@@ -64,20 +64,20 @@ export default class SignupSession {
 				break;
 			case 2:
 				this.courses.push({course: this.subjectGroups[this.group - 1].find(c => c.name == response), hl: false});
-
-				if (this.courses[this.courses.length-1].strcture == 3) { // No hl
+				
+				if (this.courses[this.courses.length-1].course.structure == 3) { // No hl
+					console.log("skip");
 					if (this.extra) {
 						if (this.ib) { // This was group 6
 							this.done();
 							return;
 						} else {
 							this.promptExtra();
-							this.state=4
+							this.state = 4;
 							break;
 						}
 					}
 
-					this.group++;
 					do this.group++;
 					while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
 					if (this.group == 6) {

@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Discord = require("discord.js");
 var fs = require("fs");
 var fsp = fs.promises;
@@ -44,25 +44,28 @@ exports.ensureDir = function (dirPath) { return __awaiter(_this, void 0, void 0,
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, 6, 7]);
+                _a.trys.push([0, 2, 7, 8]);
                 return [4 /*yield*/, fsp.stat(dirPath)];
             case 1:
                 dirStats = _a.sent();
-                return [3 /*break*/, 7];
+                return [3 /*break*/, 8];
             case 2:
                 err_1 = _a.sent();
-                if (!(err_1.code == "ENOENT")) return [3 /*break*/, 4];
+                if (!(err_1.code == "ENOENT")) return [3 /*break*/, 5];
                 return [4 /*yield*/, fsp.mkdir(dirPath)];
             case 3:
                 _a.sent();
-                return [3 /*break*/, 5];
-            case 4: throw err_1;
-            case 5: return [3 /*break*/, 7];
-            case 6:
+                return [4 /*yield*/, fsp.stat(dirPath)];
+            case 4:
+                dirStats = _a.sent();
+                return [3 /*break*/, 6];
+            case 5: throw err_1;
+            case 6: return [3 /*break*/, 8];
+            case 7:
                 if (!dirStats.isDirectory)
                     throw new Error("Path exists and is not a directory!");
                 return [7 /*endfinally*/];
-            case 7: return [2 /*return*/];
+            case 8: return [2 /*return*/];
         }
     });
 }); };
@@ -79,7 +82,7 @@ exports.ensureCategory = function (server, name) { return __awaiter(_this, void 
                     return [2 /*return*/, category];
                 }
                 return [4 /*yield*/, server.createChannel(name, {
-                        type: "category"
+                        type: "category",
                     })];
             case 2:
                 category = _a.sent();
@@ -139,7 +142,6 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                         });
                     });
                 }
-                console.log("Creating " + name + " with parent" + category.name);
                 return [4 /*yield*/, server.createChannel(name, {
                         type: "text",
                         permissionOverwrites: permissionOverwrites,

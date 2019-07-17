@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var discord_js_1 = require("discord.js");
 var config = require("./config.json");
 var ServerHandler_1 = require("./ServerHandler");
@@ -14,11 +14,13 @@ client.on("ready", function () {
         return;
     console.log("Ready!");
     client.guilds.forEach(function (server) {
-        serverHandlers.push(new ServerHandler_1["default"](client, server));
+        serverHandlers.push(new ServerHandler_1.default(client, server));
     });
-    console.log(serverHandlers.length);
-    dm = new DMHandler_1["default"](client, serverHandlers);
+    dm = new DMHandler_1.default(client, serverHandlers);
     initialized = true;
+    serverHandlers.forEach(function (h) {
+        h.initialize();
+    });
 });
 client.on("message", function (message) {
     if (message.guild)

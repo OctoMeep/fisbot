@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var config = require("./config.json");
 var readFileIfExists = function (filePath) { return __awaiter(_this, void 0, void 0, function () {

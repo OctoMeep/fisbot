@@ -30,8 +30,8 @@ export default class ServerHandler {
 		if (!this.active) return;
 	}
 
-	async initialize(message: Discord.Message) {
-		if (!(message.channel instanceof Discord.TextChannel)) return;
+	async initialize(message?: Discord.Message) {
+		if (message && !(message.channel instanceof Discord.TextChannel)) return;
 		this.active = false;
 		let categories = [];
 		let categoryChannels = [];
@@ -98,7 +98,7 @@ export default class ServerHandler {
 				}
 			}
 		} catch (err) {
-			notifications.fatal(err, message.channel);
+			notifications.fatal(err, message && <Discord.TextChannel>message.channel);
 			return;
 		}
 

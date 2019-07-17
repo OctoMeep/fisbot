@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var SignupSession_1 = require("./SignupSession");
 var DMHandler = /** @class */ (function () {
     function DMHandler(client, serverHandlers) {
@@ -55,7 +55,6 @@ var DMHandler = /** @class */ (function () {
                         console.log(message.content);
                         if (!message.content.startsWith("!")) return [3 /*break*/, 1];
                         command = message.content.substring(1);
-                        console.log(command.split(" "));
                         currentSession = void 0;
                         switch (command.split(" ")[0]) {
                             case "delete":
@@ -74,7 +73,7 @@ var DMHandler = /** @class */ (function () {
                                         return [2 /*return*/];
                                     }
                                 }
-                                this.sessions.push(new SignupSession_1["default"](this.client, message.author, this.serverHandlers));
+                                this.sessions.push(new SignupSession_1.default(this.client, message.author, this.serverHandlers));
                                 break;
                             case "cancel":
                                 currentSession = this.sessions.find(function (s) { return s.user == message.author; });
@@ -111,4 +110,4 @@ var DMHandler = /** @class */ (function () {
     ;
     return DMHandler;
 }());
-exports["default"] = DMHandler;
+exports.default = DMHandler;

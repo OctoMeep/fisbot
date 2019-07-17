@@ -9,6 +9,7 @@ export const ensureDir = async (dirPath: string) => {
 	} catch (err) {
 		if (err.code == "ENOENT") {
 			await fsp.mkdir(dirPath);
+			dirStats = await fsp.stat(dirPath);
 		} else throw err;
 	} finally {
 		if (!dirStats.isDirectory) throw new Error("Path exists and is not a directory!");

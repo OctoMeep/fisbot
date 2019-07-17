@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Discord = require("discord.js");
 var config = require("./config.json");
 var init = require("./init");
@@ -77,7 +77,7 @@ var ServerHandler = /** @class */ (function () {
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
-                        if (!(message.channel instanceof Discord.TextChannel))
+                        if (message && !(message.channel instanceof Discord.TextChannel))
                             return [2 /*return*/];
                         this.active = false;
                         categories = [];
@@ -104,19 +104,16 @@ var ServerHandler = /** @class */ (function () {
                     case 6:
                         if (!(_i < categories_1.length)) return [3 /*break*/, 9];
                         category = categories_1[_i];
-                        console.log("Ensuring " + category);
                         return [4 /*yield*/, util.ensureCategory(this.server, category)];
                     case 7:
                         categoryChannel = _e.sent();
-                        // console.log(`Created category ${category}`);
-                        console.log("Ensured " + categoryChannel.name);
+                        console.log("Ensured category " + category);
                         categoryChannels.push(categoryChannel);
                         _e.label = 8;
                     case 8:
                         _i++;
                         return [3 /*break*/, 6];
                     case 9:
-                        console.log(categoryChannels.map(function (c) { return c.name; }));
                         _a = 0, channels_1 = channels;
                         _e.label = 10;
                     case 10:
@@ -132,16 +129,16 @@ var ServerHandler = /** @class */ (function () {
                     case 11: return [4 /*yield*/, util.ensureRole(this.server, channel.name)];
                     case 12:
                         _e.sent();
-                        // console.log(`Created role ${channel.name}`);
+                        console.log("Ensured role " + channel.name);
                         return [3 /*break*/, 16];
                     case 13: return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-sl", "BLUE")];
                     case 14:
                         _e.sent();
-                        // console.log(`Created role ${channel.name + "-sl"}`);
+                        console.log("Ensured role " + (channel.name + "-sl"));
                         return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-hl", "GREEN")];
                     case 15:
-                        // console.log(`Created role ${channel.name + "-sl"}`);
                         _e.sent();
+                        console.log("Ensured role " + (channel.name + "-hl"));
                         _e.label = 16;
                     case 16:
                         _a++;
@@ -165,40 +162,39 @@ var ServerHandler = /** @class */ (function () {
                     case 19: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false)];
                     case 20:
                         _e.sent();
-                        // console.log(`Created channel ${channel.name}`);
+                        console.log("Ensured channel " + channel.name);
                         return [3 /*break*/, 32];
                     case 21: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true)];
                     case 22:
                         _e.sent();
-                        // console.log(`Created channel ${channel.name}`);
+                        console.log("Ensured channel " + channel.name);
                         return [3 /*break*/, 32];
                     case 23: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true)];
                     case 24:
                         notificationChannel = _e.sent();
-                        // console.log(`Created channel ${channel.name}`);
+                        console.log("Ensured channel " + channel.name);
                         this.notificationChannels.push(notificationChannel);
                         return [3 /*break*/, 32];
                     case 25: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false)];
                     case 26:
                         _e.sent();
-                        // console.log(`Created channel ${channel.name}`);
+                        console.log("Ensured channel " + channel.name);
                         this.courses.push(channel);
                         return [3 /*break*/, 32];
                     case 27: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false)];
                     case 28:
                         _e.sent();
-                        // console.log(`Created channel ${channel.name}`);
+                        console.log("Ensured channel " + channel.name);
                         this.courses.push(channel);
                         return [3 /*break*/, 32];
                     case 29: return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false)];
                     case 30:
                         _e.sent();
-                        // console.log(`Created channel ${channel.name + "-sl"}`);
+                        console.log("Ensured channel " + (channel.name + "-sl"));
                         return [4 /*yield*/, util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false)];
                     case 31:
-                        // console.log(`Created channel ${channel.name + "-sl"}`);
                         _e.sent();
-                        // console.log(`Created channel ${channel.name + "-hl"}`);
+                        console.log("Ensured channel " + (channel.name + "-hl"));
                         this.courses.push(channel);
                         return [3 /*break*/, 32];
                     case 32:
@@ -207,7 +203,7 @@ var ServerHandler = /** @class */ (function () {
                     case 33: return [3 /*break*/, 35];
                     case 34:
                         err_1 = _e.sent();
-                        notifications.fatal(err_1, message.channel);
+                        notifications.fatal(err_1, message && message.channel);
                         return [2 /*return*/];
                     case 35:
                         this.initialized = true;
@@ -219,4 +215,4 @@ var ServerHandler = /** @class */ (function () {
     };
     return ServerHandler;
 }());
-exports["default"] = ServerHandler;
+exports.default = ServerHandler;
