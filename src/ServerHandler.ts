@@ -1,4 +1,5 @@
 import * as Discord from "discord.js";
+import { promises as fsp } from "fs";
 import * as config from "./config.json";
 import * as init from "./init";
 import * as util from "./util";
@@ -50,7 +51,7 @@ export default class ServerHandler {
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 3:
-						await util.ensureRole(this.server, channel.name);
+						await util.ensureRole(this.server, channel.name + "-sl", "PURPLE");
 						console.log(`Ensured role ${channel.name}`);
 						break;
 					case 4:
@@ -106,5 +107,28 @@ export default class ServerHandler {
 
 		this.initialized = true;
 		this.active = true;
+	}
+	
+	async addUser(id: string, ib: boolean, courses: string) {
+		let output = id + "\t" + (ib ? "y" : "n") + "\t" + courses + "\n";
+		await fsp.appendFile(config.savePath + this.server.id + "/users", output)
+	}
+	
+	async updateUsers() {
+		let userData = await fsp.readFile(config.savePath + this.server.id + "/users", "utf8");
+		for (let userLine of userData.split("\n")) {
+			if (userLine.length == 0) continue;
+			let userValues = userLine.split("\t");
+			console.log(userValues);
+			let member = this.server.members.get(userValues[0]);
+			let roles = [];
+			for (let roleString of userValues[2].split(",")) {
+				roles.push(this.server.roles.find(r => r.name == roleString));
+			}
+			if (userValues[1] == "y") roles.push(this.server.roles.find(r => r.name == "ib"));
+			for (let role of roles) {
+				if (!member.roles.has(role.id)) member.addRole(role);
+			}
+		}
 	}
 }

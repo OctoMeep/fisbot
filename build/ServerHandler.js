@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Discord = require("discord.js");
+var fs_1 = require("fs");
 var config = require("./config.json");
 var init = require("./init");
 var util = require("./util");
@@ -126,7 +127,7 @@ var ServerHandler = /** @class */ (function () {
                             case 5: return [3 /*break*/, 13];
                         }
                         return [3 /*break*/, 16];
-                    case 11: return [4 /*yield*/, util.ensureRole(this.server, channel.name)];
+                    case 11: return [4 /*yield*/, util.ensureRole(this.server, channel.name + "-sl", "PURPLE")];
                     case 12:
                         _e.sent();
                         console.log("Ensured role " + channel.name);
@@ -208,6 +209,58 @@ var ServerHandler = /** @class */ (function () {
                     case 35:
                         this.initialized = true;
                         this.active = true;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ServerHandler.prototype.addUser = function (id, ib, courses) {
+        return __awaiter(this, void 0, void 0, function () {
+            var output;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        output = id + "\t" + (ib ? "y" : "n") + "\t" + courses + "\n";
+                        return [4 /*yield*/, fs_1.promises.appendFile(config.savePath + this.server.id + "/users", output)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ServerHandler.prototype.updateUsers = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var userData, _i, _a, userLine, userValues, member, roles, _loop_1, this_1, _b, _c, roleString, _d, roles_1, role;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(config.savePath + this.server.id + "/users", "utf8")];
+                    case 1:
+                        userData = _e.sent();
+                        for (_i = 0, _a = userData.split("\n"); _i < _a.length; _i++) {
+                            userLine = _a[_i];
+                            if (userLine.length == 0)
+                                continue;
+                            userValues = userLine.split("\t");
+                            console.log(userValues);
+                            member = this.server.members.get(userValues[0]);
+                            roles = [];
+                            _loop_1 = function (roleString) {
+                                roles.push(this_1.server.roles.find(function (r) { return r.name == roleString; }));
+                            };
+                            this_1 = this;
+                            for (_b = 0, _c = userValues[2].split(","); _b < _c.length; _b++) {
+                                roleString = _c[_b];
+                                _loop_1(roleString);
+                            }
+                            if (userValues[1] == "y")
+                                roles.push(this.server.roles.find(function (r) { return r.name == "ib"; }));
+                            for (_d = 0, roles_1 = roles; _d < roles_1.length; _d++) {
+                                role = roles_1[_d];
+                                if (!member.roles.has(role.id))
+                                    member.addRole(role);
+                            }
+                        }
                         return [2 /*return*/];
                 }
             });

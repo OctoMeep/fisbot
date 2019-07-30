@@ -92,7 +92,6 @@ var SignupSession = /** @class */ (function () {
                                 break;
                             case 2:
                                 this.courses.push({ course: this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; }), hl: false });
-                                console.log(this.courses[this.courses.length - 1]);
                                 if (this.courses[this.courses.length - 1].course.structure == 3) { // No hl
                                     console.log("skip");
                                     if (this.extra) {
@@ -206,12 +205,44 @@ var SignupSession = /** @class */ (function () {
         }
     };
     SignupSession.prototype.done = function () {
-        console.log(this.courses);
-        var output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(function (c) {
-            return c.course.name + (c.hl ? "-hl" : "-sl");
-        }).join(",");
-        this.user.send(output);
-        this.state = 5;
+        return __awaiter(this, void 0, void 0, function () {
+            var handler;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    // console.log(this.courses);
+                    // let output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(c => {
+                    // 	return c.course.name + (c.hl ? "-hl" : "-sl");
+                    // }).join(",")
+                    // this.user.send(output);
+                    // this.state = 5;
+                    return [4 /*yield*/, this.user.send("Processing signup request...")];
+                    case 1:
+                        // console.log(this.courses);
+                        // let output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(c => {
+                        // 	return c.course.name + (c.hl ? "-hl" : "-sl");
+                        // }).join(",")
+                        // this.user.send(output);
+                        // this.state = 5;
+                        _a.sent();
+                        handler = this.serverHandlers.find(function (h) { return h.server == _this.server; });
+                        return [4 /*yield*/, handler.addUser(this.user.id, this.ib, this.courses.map(function (c) {
+                                return c.course.name + (c.hl ? "-hl" : "-sl");
+                            }).join(","))];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, handler.updateUsers()];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, this.user.send("Thank you for signing up!")];
+                    case 4:
+                        _a.sent();
+                        this.state = 5;
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     return SignupSession;
 }());
