@@ -11,7 +11,7 @@ let dm: DMHandler;
 
 client.login(config.token);
 
-client.on("ready", () => {
+client.on("ready", async () => {
 	if (initialized) return;
 	console.log("Ready!");
 	client.guilds.forEach((server: Guild) => {
@@ -19,6 +19,12 @@ client.on("ready", () => {
 	});
 	dm = new DMHandler(client, serverHandlers);
 	initialized = true;
+
+	for (let handler of serverHandlers) {
+		await handler.initialize();
+		await handler.updateUsers();
+		
+	}
 });
 
 client.on("message", (message: Message) => {
@@ -26,4 +32,4 @@ client.on("message", (message: Message) => {
 		if (message.guild == serverHandler.server) serverHandler.handleMessage(message); 
 	});
 	else dm.handle(message);
-})
+});

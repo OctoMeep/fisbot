@@ -64,20 +64,20 @@ export default class SignupSession {
 				break;
 			case 2:
 				this.courses.push({course: this.subjectGroups[this.group - 1].find(c => c.name == response), hl: false});
-
-				if (this.courses[this.courses.length-1].strcture == 3) { // No hl
+				
+				if (this.courses[this.courses.length-1].course.structure == 3) { // No hl
+					console.log("skip");
 					if (this.extra) {
 						if (this.ib) { // This was group 6
 							this.done();
 							return;
 						} else {
 							this.promptExtra();
-							this.state=4
+							this.state = 4;
 							break;
 						}
 					}
 
-					this.group++;
 					do this.group++;
 					while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
 					if (this.group == 6) {
@@ -173,12 +173,21 @@ export default class SignupSession {
 		}
 	}
 
-	done () {
-		console.log(this.courses);
-		let output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(c => {
+	async done () {
+		// console.log(this.courses);
+		// let output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(c => {
+		// 	return c.course.name + (c.hl ? "-hl" : "-sl");
+		// }).join(",")
+		// this.user.send(output);
+		// this.state = 5;
+		
+		await this.user.send("Processing signup request...");
+		let handler = this.serverHandlers.find(h => h.server == this.server);
+		await handler.addUser(this.user.id, this.ib, this.courses.map(c => {
 			return c.course.name + (c.hl ? "-hl" : "-sl");
-		}).join(",")
-		this.user.send(output);
+		}).join(","));
+		await handler.updateUsers();
+		await this.user.send("Thank you for signing up!");
 		this.state = 5;
 	}
 }
