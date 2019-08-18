@@ -176,7 +176,7 @@ var ServerHandler = /** @class */ (function () {
                         console.log("Ensured channel " + channel.name);
                         this.notificationChannels.push(notificationChannel);
                         return [3 /*break*/, 32];
-                    case 25: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false)];
+                    case 25: return [4 /*yield*/, util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl"], false)];
                     case 26:
                         _e.sent();
                         console.log("Ensured channel " + channel.name);

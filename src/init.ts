@@ -17,9 +17,11 @@ export const getChannels = async (server: Guild): Promise<ChannelSetting[]> => {
 	let result: ChannelSetting[] = [];
 	const filePath: string = config.savePath + server.id + "/channels";
 	const data = await readFileIfExists(filePath);
+	console.log(data);
 	if (data) data.replace(/\r/g, "").split("\n").forEach((line: string) => {
 		if (line.length == 0 || line.startsWith("#")) return;
 		const elements = line.split("\t");
+		console.log(elements);
 		if (elements.length == 1) return;
 		if (elements.length !== 4) throw new Error("Invalid channel definition file! Each row must have 4 columns.");
 		const name = elements[0];
@@ -41,6 +43,7 @@ export const getChannels = async (server: Guild): Promise<ChannelSetting[]> => {
 			});
 		} else throw new Error("Invalid channel definition file! Structure (3rd column) cannot be greater than 5.");
 	});
+	console.log(result);
 	return result;
 };
 

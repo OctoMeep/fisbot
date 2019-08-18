@@ -79,7 +79,7 @@ export default class ServerHandler {
 						this.notificationChannels.push(notificationChannel);
 						break;
 					case 3:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name], false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl"], false);
 						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
