@@ -262,7 +262,7 @@ var ServerHandler = /** @class */ (function () {
                             }
                             if (userValues[1] == "y")
                                 roles.push(this.server.roles.find(function (r) { return r.name == "ib"; }));
-                            roles.push(this.server.roles.find(function (r) { return r.name == "ib"; }));
+                            roles.push(this.server.roles.find(function (r) { return r.name == "signed-up"; }));
                             for (_d = 0, roles_1 = roles; _d < roles_1.length; _d++) {
                                 role = roles_1[_d];
                                 if (!member.roles.has(role.id))

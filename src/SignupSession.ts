@@ -63,9 +63,10 @@ export default class SignupSession {
 				this.state = 2;
 				break;
 			case 2:
-				this.courses.push({course: this.subjectGroups[this.group - 1].find(c => c.name == response), hl: false});
+				const skip = response == "I don't take any of these" // TODO: this is terrible
+				if (!skip) this.courses.push({course: this.subjectGroups[this.group - 1].find(c => c.name == response), hl: false});
 				
-				if (this.courses[this.courses.length-1].course.structure == 3) { // No hl
+				if (skip || this.courses[this.courses.length-1].course.structure == 3) { // No hl
 					console.log("skip");
 					if (this.extra) {
 						if (this.ib) { // This was group 6
@@ -161,7 +162,7 @@ export default class SignupSession {
 				"I take a group 6 subject"
 			]);
 		} else {
-			this.currentPrompt = new Prompt(this.user, "Do you another subject?", [
+			this.currentPrompt = new Prompt(this.user, "Do you take another subject?", [
 				"I take another group 1 subject",
 				"I take another group 2 subject",
 				"I take another group 3 subject",

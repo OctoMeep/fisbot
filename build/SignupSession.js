@@ -60,7 +60,7 @@ var SignupSession = /** @class */ (function () {
     }
     SignupSession.prototype.process = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, courses_1, no_1;
+            var response, courses_1, skip, no_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -91,8 +91,11 @@ var SignupSession = /** @class */ (function () {
                                 this.state = 2;
                                 break;
                             case 2:
-                                this.courses.push({ course: this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; }), hl: false });
-                                if (this.courses[this.courses.length - 1].course.structure == 3) { // No hl
+                                skip = response == "I don't take any of these" // TODO: this is terrible
+                                ;
+                                if (!skip)
+                                    this.courses.push({ course: this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; }), hl: false });
+                                if (skip || this.courses[this.courses.length - 1].course.structure == 3) { // No hl
                                     console.log("skip");
                                     if (this.extra) {
                                         if (this.ib) { // This was group 6
@@ -193,7 +196,7 @@ var SignupSession = /** @class */ (function () {
             ]);
         }
         else {
-            this.currentPrompt = new Prompt_1.default(this.user, "Do you another subject?", [
+            this.currentPrompt = new Prompt_1.default(this.user, "Do you take another subject?", [
                 "I take another group 1 subject",
                 "I take another group 2 subject",
                 "I take another group 3 subject",

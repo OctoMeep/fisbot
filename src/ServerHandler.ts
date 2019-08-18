@@ -132,7 +132,7 @@ export default class ServerHandler {
 				roles.push(this.server.roles.find(r => r.name == roleString));
 			}
 			if (userValues[1] == "y") roles.push(this.server.roles.find(r => r.name == "ib"));
-			roles.push(this.server.roles.find(r => r.name == "ib"));
+			roles.push(this.server.roles.find(r => r.name == "signed-up"));
 			for (let role of roles) {
 				if (!member.roles.has(role.id)) member.addRole(role);
 			}
