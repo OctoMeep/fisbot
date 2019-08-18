@@ -48,6 +48,12 @@ export default class ServerHandler {
 				console.log(`Ensured category ${category}`);
 				categoryChannels.push(categoryChannel);
 			}
+
+			await util.ensureRole(this.server, "signed-up", "AQUA");
+			console.log("Ensured role signed-up");
+			await util.ensureRole(this.server, "ib", "AQUA");
+			console.log("Ensured role ib");
+
 			for (let channel of channels) {
 				switch (channel.structure) {
 					case 3:
@@ -126,6 +132,7 @@ export default class ServerHandler {
 				roles.push(this.server.roles.find(r => r.name == roleString));
 			}
 			if (userValues[1] == "y") roles.push(this.server.roles.find(r => r.name == "ib"));
+			roles.push(this.server.roles.find(r => r.name == "ib"));
 			for (let role of roles) {
 				if (!member.roles.has(role.id)) member.addRole(role);
 			}
