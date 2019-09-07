@@ -35,15 +35,20 @@ export default class SignupSession {
 		this.subjectGroups = [];
 		this.ib = false;
 		this.courses = [];
-		this.currentPrompt = new Prompt(this.user, "Which server would you like to sign up for?", this.servers.map(s => s.name));
+		
+		this.currentPrompt = new Prompt(this.user, `
+Respond to prompts by sending the number next to the answer you want.
+The signup system is not yet complete. If the option you need is not available please contact an administrator.
+Which server would you like to sign up for?
+		`, this.servers.map(s => s.name));
 		this.currentPrompt.ask();
 	}
 
 	async process (message: Discord.Message) {
 		if (message.author != this.user) return;
 		if (!this.currentPrompt) return;
-		const response = await this.currentPrompt.respond(message);
-		if (!response) return;
+		let response;
+		response = await this.currentPrompt.respond(message);
 		switch (this.state) {
 			case 0: 
 				this.server = this.servers.find(s => s.name == response);
@@ -60,67 +65,21 @@ export default class SignupSession {
 				this.ib = response == "Yes";
 				this.group = 1;
 				this.promptSubject();
-				this.state = 2;
 				break;
 			case 2:
-				const skip = response == "I don't take any of these" // TODO: this is terrible
-				if (!skip) this.courses.push({course: this.subjectGroups[this.group - 1].find(c => c.name == response), hl: false});
+				let course = this.subjectGroups[this.group - 1].find(c => c.name == response);
+				if (course) this.courses.push({course, hl: false});
 				
-				if (skip || this.courses[this.courses.length-1].course.structure == 3) { // No hl
-					console.log("skip");
-					if (this.extra) {
-						if (this.ib) { // This was group 6
-							this.done();
-							return;
-						} else {
-							this.promptExtra();
-							this.state = 4;
-							break;
-						}
-					}
-
-					do this.group++;
-					while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
-					if (this.group == 6) {
-						this.promptExtra();
-						this.state = 4;
-					} else {
-						this.promptSubject();
-						this.state = 2;
-					}
+				if (!course || this.courses[this.courses.length-1].course.structure == 3) { // "Skip" or no hl
+					this.nextGroup();
 					break;
 				}
-
-				this.currentPrompt = new Prompt(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
-				this.state = 3;
+				this.promptHL();
 				break;
 			case 3:
 				this.courses[this.courses.length-1].hl = response == "Yes";
+				this.nextGroup();
 
-				if (this.extra) {
-					if (this.ib) { // This was group 6
-						this.done();
-						return;
-					} else {
-						this.promptExtra();
-						this.state=4
-						break;
-					}
-				}
-
-				do {
-					this.group++;
-				}
-				while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
-				
-
-				if (this.group == 6) {
-					this.promptExtra();
-					this.state = 4;
-				} else {
-					this.promptSubject();
-					this.state = 2;
-				}
 				break;
 			case 4:
 				this.extra = true;
@@ -136,7 +95,6 @@ export default class SignupSession {
 					return;
 				} else {
 					this.promptSubject();
-					this.state = 2;
 				}
 				break;
 			default:
@@ -146,31 +104,40 @@ export default class SignupSession {
 	}
 
 	promptSubject () {
-		let options = [...this.subjectGroups[this.group-1].map(c => c.name)];
-		if (!this.ib) options.push("I don't take any of these");
+		let options = [...this.subjectGroups[this.group-1].map(c => c.name), "I don't take any of these"];
 		this.currentPrompt = new Prompt(this.user, `Which group ${this.group} subject do you take?`, options);	
+		this.state = 2;
 	}
 
 	promptExtra () {
-		if (this.ib) {
-			this.currentPrompt = new Prompt(this.user, "Do you take a group 6 subject or a second subject from another group?", [
-				"I take a second group 1 subject",
-				"I take a second group 2 subject",
-				"I take a second group 3 subject",
-				"I take a second group 4 subject",
-				"I take a second group 5 subject",
-				"I take a group 6 subject"
-			]);
+		this.currentPrompt = new Prompt(this.user, "Do you take another subject?", [
+			"I take another group 1 subject",
+			"I take another group 2 subject",
+			"I take another group 3 subject",
+			"I take another group 4 subject",
+			"I take another group 5 subject",
+			"I take another group 6 subject",
+			"No"
+		]);
+		this.state = 4;
+	}
+
+	promptHL () {
+		this.currentPrompt = new Prompt(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
+		this.state = 3;
+	}
+
+	nextGroup () {
+		if (this.extra) {
+			this.promptExtra();
 		} else {
-			this.currentPrompt = new Prompt(this.user, "Do you take another subject?", [
-				"I take another group 1 subject",
-				"I take another group 2 subject",
-				"I take another group 3 subject",
-				"I take another group 4 subject",
-				"I take another group 5 subject",
-				"I take another group 6 subject",
-				"No"
-			]);
+			do this.group++;
+			while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
+			if (this.group == 6) {
+				this.promptExtra();
+			} else {
+				this.promptSubject();
+			}
 		}
 	}
 

@@ -1,11 +1,17 @@
 import * as Discord from "discord.js";
 
-export const fatal = async (err: Error, channel?: Discord.TextChannel | Discord.TextChannel[]) => {
+export const error = async (err: Error, target?: Discord.TextChannel | Discord.TextChannel[] | Discord.User) => {
 	console.error(err);
 	const msg = "Fatal error, please notify an administrator: \n" + err.message;
-	if (!channel) return;
-	if (channel instanceof Discord.TextChannel) await channel.send(msg);
-	else for (let c of channel) {
-		await c.send(msg);
-	}
+	if (!target) return;
+	try {
+		if (target instanceof Discord.TextChannel || target instanceof Discord.User) await target.send(msg);
+		else for (let c of target) {
+			await c.send(msg);
+		}
+	} catch (err) {
+		console.error("Encountered another error while handling the previous one.");
+		console.error(err);
+		throw err;
+	}		
 }; 

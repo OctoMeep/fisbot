@@ -1,23 +1,25 @@
-import { Client, Message, Guild } from "discord.js";
+import * as Discord from "discord.js";
 import { promises as fsp } from "fs";
 import * as config from "./config.json";
 import ChannelSetting from "./ChannelSetting"
 
-const readFileIfExists = async (filePath: string): Promise<string> => {
+export const readFileIfExists = async (filePath: string, create?: boolean): Promise<string> => {
 	let data: string;
 	try {
 		return await fsp.readFile(filePath, "utf-8");
 	} catch (err) {
-		if (err.code == "ENOENT") return "";
+		if (err.code == "ENOENT") {
+			await fsp.writeFile(filePath, "", "utf-8")
+			return "";
+		}
 		else throw err;
 	}
 };
 
-export const getChannels = async (server: Guild): Promise<ChannelSetting[]> => {
+export const getChannels = async (server: Discord.Guild): Promise<ChannelSetting[]> => {
 	let result: ChannelSetting[] = [];
 	const filePath: string = config.savePath + server.id + "/channels";
-	const data = await readFileIfExists(filePath);
-	console.log(data);
+	const data = await readFileIfExists(filePath, true);
 	if (data) data.replace(/\r/g, "").split("\n").forEach((line: string) => {
 		if (line.length == 0 || line.startsWith("#")) return;
 		const elements = line.split("\t");
@@ -47,9 +49,9 @@ export const getChannels = async (server: Guild): Promise<ChannelSetting[]> => {
 	return result;
 };
 
-export const getCategories = async (server: Guild): Promise<string[]> => {
+export const getCategories = async (server: Discord.Guild): Promise<string[]> => {
 	const filePath: string = config.savePath + server.id + "/categories";
-	const data = await readFileIfExists(filePath);
+	const data = await readFileIfExists(filePath, true);
 	if (data) return data.replace(/\r/g, "").split("\n").filter(line => line.length != 0 && !line.startsWith("#"));
 	else return [];
 };

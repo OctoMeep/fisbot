@@ -44,9 +44,9 @@ var DMHandler = /** @class */ (function () {
     }
     DMHandler.prototype.handle = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var command, currentSession, _i, _a, session;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var command, currentSession, textMessage, _a, _i, _b, session;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (message.guild)
                             return [2 /*return*/];
@@ -85,24 +85,50 @@ var DMHandler = /** @class */ (function () {
                                     message.author.send("No signup session in progress");
                                 break;
                         }
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 13];
                     case 1:
-                        _i = 0, _a = this.sessions;
-                        _b.label = 2;
-                    case 2:
-                        if (!(_i < _a.length)) return [3 /*break*/, 5];
-                        session = _a[_i];
-                        if (!(message.author == session.user)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, session.process(message)];
+                        textMessage = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g, "");
+                        _a = textMessage;
+                        switch (_a) {
+                            case "thanks": return [3 /*break*/, 2];
+                            case "thx": return [3 /*break*/, 2];
+                            case "thank you": return [3 /*break*/, 2];
+                            case "how are you": return [3 /*break*/, 4];
+                            case "whats up": return [3 /*break*/, 4];
+                            case "sup": return [3 /*break*/, 4];
+                            case "hello there": return [3 /*break*/, 6];
+                        }
+                        return [3 /*break*/, 8];
+                    case 2: return [4 /*yield*/, message.author.send("You're welcome!")];
                     case 3:
-                        _b.sent();
+                        _c.sent();
+                        return [3 /*break*/, 13];
+                    case 4: return [4 /*yield*/, message.author.send("I'm doing great, thanks for asking!")];
+                    case 5:
+                        _c.sent();
+                        return [3 /*break*/, 13];
+                    case 6: return [4 /*yield*/, message.author.send("General Kenobi!")];
+                    case 7:
+                        _c.sent();
+                        return [3 /*break*/, 13];
+                    case 8:
+                        _i = 0, _b = this.sessions;
+                        _c.label = 9;
+                    case 9:
+                        if (!(_i < _b.length)) return [3 /*break*/, 12];
+                        session = _b[_i];
+                        if (!(message.author == session.user)) return [3 /*break*/, 11];
+                        return [4 /*yield*/, session.process(message)];
+                    case 10:
+                        _c.sent();
                         if (session.state == 5)
                             this.sessions.splice(this.sessions.indexOf(session));
-                        _b.label = 4;
-                    case 4:
+                        _c.label = 11;
+                    case 11:
                         _i++;
-                        return [3 /*break*/, 2];
-                    case 5: return [2 /*return*/];
+                        return [3 /*break*/, 9];
+                    case 12: return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
             });
         });

@@ -57,6 +57,10 @@ client.on("ready", function () { return __awaiter(_this, void 0, void 0, functio
                     serverHandlers.push(new ServerHandler_1.default(client, server));
                 });
                 dm = new DMHandler_1.default(client, serverHandlers);
+                process.on("unhandledRejection", function (err, promise) {
+                    // This should only happen because a .send failed -> connection issue
+                    console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
+                });
                 initialized = true;
                 _i = 0, serverHandlers_1 = serverHandlers;
                 _a.label = 1;

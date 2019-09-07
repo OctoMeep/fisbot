@@ -105,8 +105,11 @@ export default class ServerHandler {
 				}
 			}
 		} catch (err) {
-			notifications.fatal(err, message && <Discord.TextChannel>message.channel);
-			return;
+			try {
+				notifications.error(err, message && <Discord.TextChannel>message.channel);
+			} catch (err) {
+				throw err;
+			}		
 		}
 
 		
@@ -121,7 +124,7 @@ export default class ServerHandler {
 	}
 	
 	async updateUsers() {
-		let userData = await fsp.readFile(config.savePath + this.server.id + "/users", "utf8");
+		let userData = await init.readFileIfExists(config.savePath + this.server.id + "/users", true);
 		for (let userLine of userData.split("\n")) {
 			if (userLine.length == 0) continue;
 			let userValues = userLine.split("\t");
@@ -129,7 +132,7 @@ export default class ServerHandler {
 			let member = this.server.members.get(userValues[0]);
 			let roles = [];
 			for (let roleString of userValues[2].split(",")) {
-				roles.push(this.server.roles.find(r => r.name == roleString));
+				if (roleString.length > 0) roles.push(this.server.roles.find(r => r.name == roleString));
 			}
 			if (userValues[1] == "y") roles.push(this.server.roles.find(r => r.name == "ib"));
 			roles.push(this.server.roles.find(r => r.name == "signed-up"));
@@ -137,5 +140,13 @@ export default class ServerHandler {
 				if (!member.roles.has(role.id)) member.addRole(role);
 			}
 		}
+	}
+
+	async error(err: Error) {
+		try {
+			notifications.error(err, <Discord.TextChannel[]>this.notificationChannels);
+		} catch (err) {
+			throw err;
+		}		
 	}
 }

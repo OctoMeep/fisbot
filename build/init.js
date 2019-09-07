@@ -38,22 +38,24 @@ var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var config = require("./config.json");
-var readFileIfExists = function (filePath) { return __awaiter(_this, void 0, void 0, function () {
+exports.readFileIfExists = function (filePath, create) { return __awaiter(_this, void 0, void 0, function () {
     var data, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
+                _a.trys.push([0, 2, , 6]);
                 return [4 /*yield*/, fs_1.promises.readFile(filePath, "utf-8")];
             case 1: return [2 /*return*/, _a.sent()];
             case 2:
                 err_1 = _a.sent();
-                if (err_1.code == "ENOENT")
-                    return [2 /*return*/, ""];
-                else
-                    throw err_1;
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
+                if (!(err_1.code == "ENOENT")) return [3 /*break*/, 4];
+                return [4 /*yield*/, fs_1.promises.writeFile(filePath, "", "utf-8")];
+            case 3:
+                _a.sent();
+                return [2 /*return*/, ""];
+            case 4: throw err_1;
+            case 5: return [3 /*break*/, 6];
+            case 6: return [2 /*return*/];
         }
     });
 }); };
@@ -64,10 +66,9 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
             case 0:
                 result = [];
                 filePath = config.savePath + server.id + "/channels";
-                return [4 /*yield*/, readFileIfExists(filePath)];
+                return [4 /*yield*/, exports.readFileIfExists(filePath, true)];
             case 1:
                 data = _a.sent();
-                console.log(data);
                 if (data)
                     data.replace(/\r/g, "").split("\n").forEach(function (line) {
                         if (line.length == 0 || line.startsWith("#"))
@@ -111,7 +112,7 @@ exports.getCategories = function (server) { return __awaiter(_this, void 0, void
         switch (_a.label) {
             case 0:
                 filePath = config.savePath + server.id + "/categories";
-                return [4 /*yield*/, readFileIfExists(filePath)];
+                return [4 /*yield*/, exports.readFileIfExists(filePath, true)];
             case 1:
                 data = _a.sent();
                 if (data)

@@ -211,8 +211,13 @@ var ServerHandler = /** @class */ (function () {
                     case 35: return [3 /*break*/, 37];
                     case 36:
                         err_1 = _e.sent();
-                        notifications.fatal(err_1, message && message.channel);
-                        return [2 /*return*/];
+                        try {
+                            notifications.error(err_1, message && message.channel);
+                        }
+                        catch (err) {
+                            throw err;
+                        }
+                        return [3 /*break*/, 37];
                     case 37:
                         this.initialized = true;
                         this.active = true;
@@ -241,7 +246,7 @@ var ServerHandler = /** @class */ (function () {
             var userData, _i, _a, userLine, userValues, member, roles, _loop_1, this_1, _b, _c, roleString, _d, roles_1, role;
             return __generator(this, function (_e) {
                 switch (_e.label) {
-                    case 0: return [4 /*yield*/, fs_1.promises.readFile(config.savePath + this.server.id + "/users", "utf8")];
+                    case 0: return [4 /*yield*/, init.readFileIfExists(config.savePath + this.server.id + "/users", true)];
                     case 1:
                         userData = _e.sent();
                         for (_i = 0, _a = userData.split("\n"); _i < _a.length; _i++) {
@@ -253,7 +258,8 @@ var ServerHandler = /** @class */ (function () {
                             member = this.server.members.get(userValues[0]);
                             roles = [];
                             _loop_1 = function (roleString) {
-                                roles.push(this_1.server.roles.find(function (r) { return r.name == roleString; }));
+                                if (roleString.length > 0)
+                                    roles.push(this_1.server.roles.find(function (r) { return r.name == roleString; }));
                             };
                             this_1 = this;
                             for (_b = 0, _c = userValues[2].split(","); _b < _c.length; _b++) {
@@ -271,6 +277,19 @@ var ServerHandler = /** @class */ (function () {
                         }
                         return [2 /*return*/];
                 }
+            });
+        });
+    };
+    ServerHandler.prototype.error = function (err) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                try {
+                    notifications.error(err, this.notificationChannels);
+                }
+                catch (err) {
+                    throw err;
+                }
+                return [2 /*return*/];
             });
         });
     };

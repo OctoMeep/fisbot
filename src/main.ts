@@ -18,6 +18,12 @@ client.on("ready", async () => {
 		serverHandlers.push(new ServerHandler(client, server));
 	});
 	dm = new DMHandler(client, serverHandlers);
+
+	process.on("unhandledRejection", (err, promise) => {
+		// This should only happen because a .send failed -> connection issue
+		console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
+	});
+
 	initialized = true;
 
 	for (let handler of serverHandlers) {
