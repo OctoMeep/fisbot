@@ -48,6 +48,7 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 	}
 	let permissionOverwrites = [];
 	const everyone = server.roles.find(r => r.name == "@everyone")
+	if (!everyone) throw "\"@everyone\" role does not exist";
 	if (readOnly) permissionOverwrites.push({
 		id: everyone,
 		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
@@ -59,6 +60,7 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 		});
 		roles.forEach((role: string) => {
 			const serverRole = server.roles.find(r => r.name == role);
+			if (!serverRole) throw `"${role}" role does not exist`;
 			permissionOverwrites.push({
 				id: serverRole,
 				allow: Discord.Permissions.FLAGS.VIEW_CHANNEL

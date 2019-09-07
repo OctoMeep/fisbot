@@ -124,6 +124,8 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                 }
                 permissionOverwrites = [];
                 everyone = server.roles.find(function (r) { return r.name == "@everyone"; });
+                if (!everyone)
+                    throw "\"@everyone\" role does not exist";
                 if (readOnly)
                     permissionOverwrites.push({
                         id: everyone,
@@ -136,6 +138,8 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                     });
                     roles.forEach(function (role) {
                         var serverRole = server.roles.find(function (r) { return r.name == role; });
+                        if (!serverRole)
+                            throw "\"" + role + "\" role does not exist";
                         permissionOverwrites.push({
                             id: serverRole,
                             allow: Discord.Permissions.FLAGS.VIEW_CHANNEL

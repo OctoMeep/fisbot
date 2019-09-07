@@ -74,6 +74,7 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
                         if (line.length == 0 || line.startsWith("#"))
                             return;
                         var elements = line.split("\t");
+                        console.log(elements);
                         if (elements.length == 1)
                             return;
                         if (elements.length !== 4)
@@ -100,6 +101,7 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
                         else
                             throw new Error("Invalid channel definition file! Structure (3rd column) cannot be greater than 5.");
                     });
+                console.log(result);
                 return [2 /*return*/, result];
         }
     });
