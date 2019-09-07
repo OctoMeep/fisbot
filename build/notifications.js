@@ -37,34 +37,43 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Discord = require("discord.js");
-exports.fatal = function (err, channel) { return __awaiter(_this, void 0, void 0, function () {
-    var msg, _i, channel_1, c;
+exports.error = function (err, target) { return __awaiter(_this, void 0, void 0, function () {
+    var msg, _i, target_1, c, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 console.error(err);
                 msg = "Fatal error, please notify an administrator: \n" + err.message;
-                if (!channel)
+                if (!target)
                     return [2 /*return*/];
-                if (!(channel instanceof Discord.TextChannel)) return [3 /*break*/, 2];
-                return [4 /*yield*/, channel.send(msg)];
+                _a.label = 1;
             case 1:
-                _a.sent();
-                return [3 /*break*/, 6];
+                _a.trys.push([1, 8, , 9]);
+                if (!(target instanceof Discord.TextChannel || target instanceof Discord.User)) return [3 /*break*/, 3];
+                return [4 /*yield*/, target.send(msg)];
             case 2:
-                _i = 0, channel_1 = channel;
-                _a.label = 3;
-            case 3:
-                if (!(_i < channel_1.length)) return [3 /*break*/, 6];
-                c = channel_1[_i];
-                return [4 /*yield*/, c.send(msg)];
-            case 4:
                 _a.sent();
-                _a.label = 5;
+                return [3 /*break*/, 7];
+            case 3:
+                _i = 0, target_1 = target;
+                _a.label = 4;
+            case 4:
+                if (!(_i < target_1.length)) return [3 /*break*/, 7];
+                c = target_1[_i];
+                return [4 /*yield*/, c.send(msg)];
             case 5:
+                _a.sent();
+                _a.label = 6;
+            case 6:
                 _i++;
-                return [3 /*break*/, 3];
-            case 6: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 7: return [3 /*break*/, 9];
+            case 8:
+                err_1 = _a.sent();
+                console.error("Encountered another error while handling the previous one.");
+                console.error(err_1);
+                throw err_1;
+            case 9: return [2 /*return*/];
         }
     });
 }); };

@@ -49,13 +49,32 @@ export default class DMHandler {
 					else message.author.send("No signup session in progress");
 					break;
 			}
-		} else for (let session of this.sessions) {
-			if (message.author == session.user) {
-				await session.process(message);
-				if (session.state == 5) this.sessions.splice(this.sessions.indexOf(session));
+		} else {
+			let textMessage = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
+			switch (textMessage) {//special responses
+				case "thanks":
+				case "thx":
+				case "thank you":
+					await message.author.send("You're welcome!");
+					break;
+				case "how are you":
+				case "whats up":
+				case "sup":
+					await message.author.send("I'm doing great, thanks for asking!");
+					break;
+				case "hello there":
+					await message.author.send("General Kenobi!");
+					break;
+				default:
+					for (let session of this.sessions) {
+						if (message.author == session.user) {
+								await session.process(message);
+								if (session.state == 5) this.sessions.splice(this.sessions.indexOf(session));
+						}			
+					}
+					break;
 			}
 		}
-		
 	};
 }
 

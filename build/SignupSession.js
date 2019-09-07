@@ -55,12 +55,12 @@ var SignupSession = /** @class */ (function () {
         this.subjectGroups = [];
         this.ib = false;
         this.courses = [];
-        this.currentPrompt = new Prompt_1.default(this.user, "Which server would you like to sign up for?", this.servers.map(function (s) { return s.name; }));
+        this.currentPrompt = new Prompt_1.default(this.user, "\nRespond to prompts by sending the number next to the answer you want.\nThe signup system is not yet complete. If the option you need is not available please contact an administrator.\nWhich server would you like to sign up for?\n\t\t", this.servers.map(function (s) { return s.name; }));
         this.currentPrompt.ask();
     }
     SignupSession.prototype.process = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, courses_1, no_1;
+            var response, courses_1, course, no_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -72,8 +72,6 @@ var SignupSession = /** @class */ (function () {
                         return [4 /*yield*/, this.currentPrompt.respond(message)];
                     case 1:
                         response = _a.sent();
-                        if (!response)
-                            return [2 /*return*/];
                         switch (this.state) {
                             case 0:
                                 this.server = this.servers.find(function (s) { return s.name == response; });
@@ -88,63 +86,20 @@ var SignupSession = /** @class */ (function () {
                                 this.ib = response == "Yes";
                                 this.group = 1;
                                 this.promptSubject();
-                                this.state = 2;
                                 break;
                             case 2:
-                                this.courses.push({ course: this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; }), hl: false });
-                                if (this.courses[this.courses.length - 1].course.structure == 3) { // No hl
-                                    console.log("skip");
-                                    if (this.extra) {
-                                        if (this.ib) { // This was group 6
-                                            this.done();
-                                            return [2 /*return*/];
-                                        }
-                                        else {
-                                            this.promptExtra();
-                                            this.state = 4;
-                                            break;
-                                        }
-                                    }
-                                    do
-                                        this.group++;
-                                    while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
-                                    if (this.group == 6) {
-                                        this.promptExtra();
-                                        this.state = 4;
-                                    }
-                                    else {
-                                        this.promptSubject();
-                                        this.state = 2;
-                                    }
+                                course = this.subjectGroups[this.group - 1].find(function (c) { return c.name == response; });
+                                if (course)
+                                    this.courses.push({ course: course, hl: false });
+                                if (!course || this.courses[this.courses.length - 1].course.structure == 3) { // "Skip" or no hl
+                                    this.nextGroup();
                                     break;
                                 }
-                                this.currentPrompt = new Prompt_1.default(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
-                                this.state = 3;
+                                this.promptHL();
                                 break;
                             case 3:
                                 this.courses[this.courses.length - 1].hl = response == "Yes";
-                                if (this.extra) {
-                                    if (this.ib) { // This was group 6
-                                        this.done();
-                                        return [2 /*return*/];
-                                    }
-                                    else {
-                                        this.promptExtra();
-                                        this.state = 4;
-                                        break;
-                                    }
-                                }
-                                do {
-                                    this.group++;
-                                } while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
-                                if (this.group == 6) {
-                                    this.promptExtra();
-                                    this.state = 4;
-                                }
-                                else {
-                                    this.promptSubject();
-                                    this.state = 2;
-                                }
+                                this.nextGroup();
                                 break;
                             case 4:
                                 this.extra = true;
@@ -161,7 +116,6 @@ var SignupSession = /** @class */ (function () {
                                 }
                                 else {
                                     this.promptSubject();
-                                    this.state = 2;
                                 }
                                 break;
                             default:
@@ -176,32 +130,40 @@ var SignupSession = /** @class */ (function () {
         });
     };
     SignupSession.prototype.promptSubject = function () {
-        var options = this.subjectGroups[this.group - 1].map(function (c) { return c.name; }).slice();
-        if (!this.ib)
-            options.push("I don't take any of these");
+        var options = this.subjectGroups[this.group - 1].map(function (c) { return c.name; }).concat(["I don't take any of these"]);
         this.currentPrompt = new Prompt_1.default(this.user, "Which group " + this.group + " subject do you take?", options);
+        this.state = 2;
     };
     SignupSession.prototype.promptExtra = function () {
-        if (this.ib) {
-            this.currentPrompt = new Prompt_1.default(this.user, "Do you take a group 6 subject or a second subject from another group?", [
-                "I take a second group 1 subject",
-                "I take a second group 2 subject",
-                "I take a second group 3 subject",
-                "I take a second group 4 subject",
-                "I take a second group 5 subject",
-                "I take a group 6 subject"
-            ]);
+        this.currentPrompt = new Prompt_1.default(this.user, "Do you take another subject?", [
+            "I take another group 1 subject",
+            "I take another group 2 subject",
+            "I take another group 3 subject",
+            "I take another group 4 subject",
+            "I take another group 5 subject",
+            "I take another group 6 subject",
+            "No"
+        ]);
+        this.state = 4;
+    };
+    SignupSession.prototype.promptHL = function () {
+        this.currentPrompt = new Prompt_1.default(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
+        this.state = 3;
+    };
+    SignupSession.prototype.nextGroup = function () {
+        if (this.extra) {
+            this.promptExtra();
         }
         else {
-            this.currentPrompt = new Prompt_1.default(this.user, "Do you another subject?", [
-                "I take another group 1 subject",
-                "I take another group 2 subject",
-                "I take another group 3 subject",
-                "I take another group 4 subject",
-                "I take another group 5 subject",
-                "I take another group 6 subject",
-                "No"
-            ]);
+            do
+                this.group++;
+            while (this.subjectGroups[this.group - 1].length == 0 && this.group < 6);
+            if (this.group == 6) {
+                this.promptExtra();
+            }
+            else {
+                this.promptSubject();
+            }
         }
     };
     SignupSession.prototype.done = function () {
