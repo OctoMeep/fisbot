@@ -70,12 +70,13 @@ export default class DMHandler {
 						if (message.author == session.user) {
 								await session.process(message);
 								if (session.state == 5) this.sessions.splice(this.sessions.indexOf(session));
-						}			
+						}
 					}
 					break;
+			}
+			if (["bonobo","monkey","asshole","retard","dumbass","fuck you","bitch","bastard","buffoon","kill yourself","kys","commit neckrope","pull an okonkwo","die", "commit toasterbath"].some(s => textMessage.includes(s)) {
+				await message.author.send("No u.");
 			}
 		}
 	};
 }
-
-
