@@ -5,8 +5,8 @@ import DMHandler from "./DMHandler"
 
 const client = new Client();
 
-let initialized: boolean = false; // Avoid rerunning init code on connection loss
-let serverHandlers: ServerHandler[] = [];
+let initialized = false; // Avoid rerunning init code on connection loss
+const serverHandlers: ServerHandler[] = [];
 let dm: DMHandler;
 
 client.login(config.token);
@@ -26,7 +26,7 @@ client.on("ready", async () => {
 
 	initialized = true;
 
-	for (let handler of serverHandlers) {
+	for (const handler of serverHandlers) {
 		await handler.initialize();
 		await handler.updateUsers();
 		
@@ -38,4 +38,14 @@ client.on("message", (message: Message) => {
 		if (message.guild == serverHandler.server) serverHandler.handleMessage(message); 
 	});
 	else dm.handle(message);
+});
+
+client.on("messageDelete", async (message: Message) => {
+	if (message.guild) await message.guild.owner.user.send(`
+		Server: ${message.guild.name}
+		Deletion time: ${new Date()}
+		Send time: ${message.createdAt}
+		Author: ${message.author}
+		Content: ${message.content}
+	`);
 });

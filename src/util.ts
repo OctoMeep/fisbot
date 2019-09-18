@@ -17,7 +17,7 @@ export const ensureDir = async (dirPath: string) => {
 }
 
 export const ensureCategory = async (server: Discord.Guild, name: string): Promise<Discord.CategoryChannel> => {
-	let category = await server.channels.find(c => c.name == name);
+	let category = server.channels.find(c => c.name == name);
 	if (category) {
 		if (!(category instanceof Discord.CategoryChannel)) throw new Error(`Channel ${name} exists but is not a category channel.`);
 		return category;
@@ -31,7 +31,7 @@ export const ensureCategory = async (server: Discord.Guild, name: string): Promi
 }
 
 export const ensureRole = async (server: Discord.Guild, name: string, color?: string | number | [number, number, number]): Promise<Discord.Role> => {
-	let role = await server.roles.find(r => r.name == name);
+	let role = server.roles.find(r => r.name == name);
 	if (role) return role;
 	else return await server.createRole({
 		name,
@@ -41,7 +41,7 @@ export const ensureRole = async (server: Discord.Guild, name: string, color?: st
 }
 
 export const ensureChannel = async (server: Discord.Guild, name: string, category: Discord.CategoryChannel, roles: string[], readOnly: boolean): Promise<Discord.TextChannel> => {
-	let channel = await server.channels.find(c => c.name == name);
+	let channel = server.channels.find(c => c.name == name);
 	if (channel) {
 		if (!(channel instanceof Discord.TextChannel)) throw new Error(`Channel ${name} exists but is not a text channel.`);
 		return channel;

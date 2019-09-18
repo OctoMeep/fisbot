@@ -13,14 +13,14 @@ export default class DMHandler {
 		this.serverHandlers = serverHandlers;
 	}
 
-	async handle (message: Discord.Message) {
+	async handle (message: Discord.Message): Promise<void> {
 		if (message.guild) return;
 		if (message.author.bot) return;
 		console.log(message.content);
 
 		if (message.content.startsWith("!")) {
 			const command = message.content.substring(1);
-			let currentSession;
+			let currentSession: SignupSession;
 			switch (command.split(" ")[0]) {
 				case "delete":
 					// TODO: Remove user data
@@ -50,7 +50,7 @@ export default class DMHandler {
 					break;
 			}
 		} else {
-			let textMessage = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
+			const textMessage = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g,"");
 			switch (textMessage) {//special responses
 				case "thanks":
 				case "thx":
@@ -66,7 +66,7 @@ export default class DMHandler {
 					await message.author.send("General Kenobi!");
 					break;
 				default:
-					for (let session of this.sessions) {
+					for (const session of this.sessions) {
 						if (message.author == session.user) {
 								await session.process(message);
 								if (session.state == 5) this.sessions.splice(this.sessions.indexOf(session));
@@ -74,9 +74,9 @@ export default class DMHandler {
 					}
 					break;
 			}
-			if (["bonobo","monkey","asshole","retard","dumbass","fuck you","bitch","bastard","buffoon","kill yourself","kys","commit neckrope","pull an okonkwo","die", "commit toasterbath"].some(s => textMessage.includes(s)) {
+			if (["bonobo","monkey","asshole","retard","dumbass","fuck you","bitch","bastard","buffoon","kill yourself","kys","commit neckrope","pull an okonkwo","die", "commit toasterbath"].some(s => textMessage.includes(s))) {
 				await message.author.send("No u.");
 			}
 		}
-	};
+	}
 }

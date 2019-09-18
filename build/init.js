@@ -38,8 +38,8 @@ var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var config = require("./config.json");
-exports.readFileIfExists = function (filePath, create) { return __awaiter(_this, void 0, void 0, function () {
-    var data, err_1;
+exports.readFileIfExists = function (filePath) { return __awaiter(_this, void 0, void 0, function () {
+    var err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -66,7 +66,7 @@ exports.getChannels = function (server) { return __awaiter(_this, void 0, void 0
             case 0:
                 result = [];
                 filePath = config.savePath + server.id + "/channels";
-                return [4 /*yield*/, exports.readFileIfExists(filePath, true)];
+                return [4 /*yield*/, exports.readFileIfExists(filePath)];
             case 1:
                 data = _a.sent();
                 if (data)
@@ -112,7 +112,7 @@ exports.getCategories = function (server) { return __awaiter(_this, void 0, void
         switch (_a.label) {
             case 0:
                 filePath = config.savePath + server.id + "/categories";
-                return [4 /*yield*/, exports.readFileIfExists(filePath, true)];
+                return [4 /*yield*/, exports.readFileIfExists(filePath)];
             case 1:
                 data = _a.sent();
                 if (data)

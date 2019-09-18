@@ -11,7 +11,7 @@ export default class Prompt {
 		this.options = options;
 	}
 
-	async ask () {
+	async ask(): Promise<void> {
 		await this.user.send(this.text + "\n" + this.options.map((option, index) => (index + 1) + ": " + option).join("\n"));
 	}
 

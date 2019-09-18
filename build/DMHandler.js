@@ -44,7 +44,7 @@ var DMHandler = /** @class */ (function () {
     }
     DMHandler.prototype.handle = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var command, currentSession, textMessage, _a, _i, _b, session;
+            var command, currentSession, textMessage_1, _a, _i, _b, session;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -85,10 +85,10 @@ var DMHandler = /** @class */ (function () {
                                     message.author.send("No signup session in progress");
                                 break;
                         }
-                        return [3 /*break*/, 13];
+                        return [3 /*break*/, 15];
                     case 1:
-                        textMessage = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g, "");
-                        _a = textMessage;
+                        textMessage_1 = message.content.toLowerCase().replace(/['!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g, "");
+                        _a = textMessage_1;
                         switch (_a) {
                             case "thanks": return [3 /*break*/, 2];
                             case "thx": return [3 /*break*/, 2];
@@ -128,12 +128,17 @@ var DMHandler = /** @class */ (function () {
                         _i++;
                         return [3 /*break*/, 9];
                     case 12: return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                    case 13:
+                        if (!["bonobo", "monkey", "asshole", "retard", "dumbass", "fuck you", "bitch", "bastard", "buffoon", "kill yourself", "kys", "commit neckrope", "pull an okonkwo", "die", "commit toasterbath"].some(function (s) { return textMessage_1.includes(s); })) return [3 /*break*/, 15];
+                        return [4 /*yield*/, message.author.send("No u.")];
+                    case 14:
+                        _c.sent();
+                        _c.label = 15;
+                    case 15: return [2 /*return*/];
                 }
             });
         });
     };
-    ;
     return DMHandler;
 }());
 exports.default = DMHandler;

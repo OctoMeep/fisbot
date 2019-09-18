@@ -5,6 +5,8 @@ import * as init from "./init";
 import * as util from "./util";
 import * as notifications from "./notifications";
 import ChannelSetting from "./ChannelSetting";
+import * as serverCommands from "./serverCommands";
+import UserRecord from "./UserRecord"
 
 export default class ServerHandler {
 
@@ -24,26 +26,28 @@ export default class ServerHandler {
 		this.notificationChannels = [];
 	}
 
-	async handleMessage (message: Discord.Message) {
+	async handleMessage (message: Discord.Message): Promise<void> {
 		if (!(message.channel instanceof Discord.TextChannel)) return;
 		if (message.author.bot) return;
 		if (!this.initialized) await this.initialize(message);
 		if (!this.active) return;
+
+		if (message.content.startsWith("!")) serverCommands.handleMessage(message, this);
 	}
 
-	async initialize(message?: Discord.Message) {
+	async initialize(message?: Discord.Message): Promise<void> {
 		if (message && !(message.channel instanceof Discord.TextChannel)) return;
 		this.active = false;
 		let categories = [];
-		let categoryChannels = [];
-		let channels = [];
+		const categoryChannels: Discord.CategoryChannel[] = [];
+		let channels: ChannelSetting[] = [];
 		const dirPath = config.savePath + this.server.id;
 		try {
 			await util.ensureDir(config.savePath);
 			await util.ensureDir(dirPath);
 			categories = await init.getCategories(this.server);
 			channels = await init.getChannels(this.server);
-			for (let category of categories) {
+			for (const category of categories) {
 				const categoryChannel = await util.ensureCategory(this.server, category);
 				console.log(`Ensured category ${category}`);
 				categoryChannels.push(categoryChannel);
@@ -54,7 +58,7 @@ export default class ServerHandler {
 			await util.ensureRole(this.server, "ib", "AQUA");
 			console.log("Ensured role ib");
 
-			for (let channel of channels) {
+			for (const channel of channels) {
 				switch (channel.structure) {
 					case 3:
 						await util.ensureRole(this.server, channel.name + "-sl", "PURPLE");
@@ -69,7 +73,7 @@ export default class ServerHandler {
 				}
 			}
 
-			for (let channel of channels) {
+			for (const channel of channels) {
 				switch (channel.structure) {
 					case 0:
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false);
@@ -80,7 +84,7 @@ export default class ServerHandler {
 						console.log(`Ensured channel ${channel.name}`);
 						break;
 					case 2:
-						let notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
+						const notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
 						console.log(`Ensured channel ${channel.name}`);
 						this.notificationChannels.push(notificationChannel);
 						break;
@@ -105,48 +109,96 @@ export default class ServerHandler {
 				}
 			}
 		} catch (err) {
-			try {
-				notifications.error(err, message && <Discord.TextChannel>message.channel);
-			} catch (err) {
-				throw err;
-			}		
+			notifications.error(err, message && message.channel as Discord.TextChannel);
 		}
 
-		
+
 
 		this.initialized = true;
 		this.active = true;
+
+		(async function loop(self: ServerHandler): Promise<void> {
+			let now = new Date();
+			for (const user of self.server.members.map((m: Discord.GuildMember) => m.user)) {
+				const record = await self.getUserRecord(user.id);
+				if (!record) continue;
+				if (+record.unbanDate === 0) continue;
+				else if (record.unbanDate < now.getTime()) self.unbanUser(user);
+			}
+			self.updateUsers();
+			now = new Date();
+			setTimeout(() => {loop(self)}, 60000 - (now.getTime() % 60000));
+		})(this);
+
 	}
-	
-	async addUser(id: string, ib: boolean, courses: string) {
-		let output = id + "\t" + (ib ? "y" : "n") + "\t" + courses + "\n";
-		await fsp.appendFile(config.savePath + this.server.id + "/users", output)
+
+	async addUser(record: UserRecord): Promise<void> {
+		console.log(record);
+		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
+		const lines = userData.split("\n");
+		for (let i = 0; i < lines.length; i++) {
+			if (lines[i].startsWith(record.id)) {
+				lines[i] = record.toString();
+				await fsp.writeFile(config.savePath + this.server.id + "/users", lines.join("\n"));
+				return;
+			}		
+		}
+		await fsp.appendFile(config.savePath + this.server.id + "/users", record.toString())
 	}
-	
-	async updateUsers() {
-		let userData = await init.readFileIfExists(config.savePath + this.server.id + "/users", true);
-		for (let userLine of userData.split("\n")) {
+
+	async updateUsers(): Promise<void> {
+		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
+		for (const userLine of userData.split("\n")) {
 			if (userLine.length == 0) continue;
-			let userValues = userLine.split("\t");
-			console.log(userValues);
-			let member = this.server.members.get(userValues[0]);
-			let roles = [];
-			for (let roleString of userValues[2].split(",")) {
+			const userRecord = UserRecord.fromString(userLine);
+			const member = this.server.members.get(userRecord.id);
+			const roles = [];
+			for (const roleString of userRecord.courses) {
 				if (roleString.length > 0) roles.push(this.server.roles.find(r => r.name == roleString));
 			}
-			if (userValues[1] == "y") roles.push(this.server.roles.find(r => r.name == "ib"));
+			if (userRecord.ib) roles.push(this.server.roles.find(r => r.name == "ib"));
 			roles.push(this.server.roles.find(r => r.name == "signed-up"));
-			for (let role of roles) {
+			for (const role of roles) {
 				if (!member.roles.has(role.id)) member.addRole(role);
 			}
 		}
 	}
 
-	async error(err: Error) {
-		try {
-			notifications.error(err, <Discord.TextChannel[]>this.notificationChannels);
-		} catch (err) {
-			throw err;
-		}		
+	async getUserRecord(id: string): Promise<UserRecord> {
+		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
+		const userLine = await userData.split("\n").find((s: string) => s.startsWith(id));
+		if (!userLine) return null;
+		return UserRecord.fromString(userLine);
+	}
+
+	async banUser(user: Discord.User, unbanDate): Promise<void> {
+		const record = await this.getUserRecord(user.id);
+		record.unbanDate = unbanDate.getTime();
+		await this.addUser(record);
+		const member = await this.server.fetchMember(user);
+		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3))));
+	}
+
+	async unbanUser(user: Discord.User): Promise<void> {
+		const record = await this.getUserRecord(user.id);
+		record.unbanDate = 0;
+		await this.addUser(record);
+		this.updateUsers();
+	}
+
+	async strikeUser(user: Discord.User): Promise<void> {
+		const record = await this.getUserRecord(user.id);
+		record.strikes++;
+		if (record.strikes >= 3) {
+			const unbanDate = new Date();
+			unbanDate.setHours(unbanDate.getHours() + 24);
+			await this.addUser(record);
+			await this.banUser(user, unbanDate);
+		} else await this.addUser(record);
+
+	}
+
+	async error(err: Error): Promise<void> {
+		notifications.error(err, this.notificationChannels as Discord.TextChannel[]);
 	}
 }

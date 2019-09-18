@@ -73,9 +73,8 @@ exports.ensureCategory = function (server, name) { return __awaiter(_this, void 
     var category;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, server.channels.find(function (c) { return c.name == name; })];
-            case 1:
-                category = _a.sent();
+            case 0:
+                category = server.channels.find(function (c) { return c.name == name; });
                 if (category) {
                     if (!(category instanceof Discord.CategoryChannel))
                         throw new Error("Channel " + name + " exists but is not a category channel.");
@@ -84,7 +83,7 @@ exports.ensureCategory = function (server, name) { return __awaiter(_this, void 
                 return [4 /*yield*/, server.createChannel(name, {
                         type: "category",
                     })];
-            case 2:
+            case 1:
                 category = _a.sent();
                 if (!(category instanceof Discord.CategoryChannel))
                     throw new Error("This should never happen");
@@ -96,17 +95,16 @@ exports.ensureRole = function (server, name, color) { return __awaiter(_this, vo
     var role;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, server.roles.find(function (r) { return r.name == name; })];
-            case 1:
-                role = _a.sent();
-                if (!role) return [3 /*break*/, 2];
+            case 0:
+                role = server.roles.find(function (r) { return r.name == name; });
+                if (!role) return [3 /*break*/, 1];
                 return [2 /*return*/, role];
-            case 2: return [4 /*yield*/, server.createRole({
+            case 1: return [4 /*yield*/, server.createRole({
                     name: name,
                     mentionable: true,
                     color: color
                 })];
-            case 3: return [2 /*return*/, _a.sent()];
+            case 2: return [2 /*return*/, _a.sent()];
         }
     });
 }); };
@@ -114,9 +112,8 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
     var channel, permissionOverwrites, everyone;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, server.channels.find(function (c) { return c.name == name; })];
-            case 1:
-                channel = _a.sent();
+            case 0:
+                channel = server.channels.find(function (c) { return c.name == name; });
                 if (channel) {
                     if (!(channel instanceof Discord.TextChannel))
                         throw new Error("Channel " + name + " exists but is not a text channel.");
@@ -151,7 +148,7 @@ exports.ensureChannel = function (server, name, category, roles, readOnly) { ret
                         permissionOverwrites: permissionOverwrites,
                         parent: category
                     })];
-            case 2:
+            case 1:
                 channel = _a.sent();
                 if (!(channel instanceof Discord.TextChannel))
                     throw new Error("This should never happen");

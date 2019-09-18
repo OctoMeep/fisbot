@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Prompt_1 = require("./Prompt");
+var UserRecord_1 = require("./UserRecord");
 var SignupSession = /** @class */ (function () {
     function SignupSession(client, user, serverHandlers) {
         var _this = this;
@@ -189,9 +190,9 @@ var SignupSession = /** @class */ (function () {
                         // this.state = 5;
                         _a.sent();
                         handler = this.serverHandlers.find(function (h) { return h.server == _this.server; });
-                        return [4 /*yield*/, handler.addUser(this.user.id, this.ib, this.courses.map(function (c) {
+                        return [4 /*yield*/, handler.addUser(new UserRecord_1.default(this.user.id, this.ib, this.courses.map(function (c) {
                                 return c.course.name + (c.hl ? "-hl" : "-sl");
-                            }).join(","))];
+                            }), 0, 0))];
                     case 2:
                         _a.sent();
                         return [4 /*yield*/, handler.updateUsers()];

@@ -41,6 +41,8 @@ var config = require("./config.json");
 var init = require("./init");
 var util = require("./util");
 var notifications = require("./notifications");
+var serverCommands = require("./serverCommands");
+var UserRecord_1 = require("./UserRecord");
 var ServerHandler = /** @class */ (function () {
     function ServerHandler(client, server) {
         this.client = client;
@@ -67,6 +69,8 @@ var ServerHandler = /** @class */ (function () {
                     case 2:
                         if (!this.active)
                             return [2 /*return*/];
+                        if (message.content.startsWith("!"))
+                            serverCommands.handleMessage(message, this);
                         return [2 /*return*/];
                 }
             });
@@ -211,30 +215,76 @@ var ServerHandler = /** @class */ (function () {
                     case 35: return [3 /*break*/, 37];
                     case 36:
                         err_1 = _e.sent();
-                        try {
-                            notifications.error(err_1, message && message.channel);
-                        }
-                        catch (err) {
-                            throw err;
-                        }
+                        notifications.error(err_1, message && message.channel);
                         return [3 /*break*/, 37];
                     case 37:
                         this.initialized = true;
                         this.active = true;
+                        (function loop(self) {
+                            return __awaiter(this, void 0, void 0, function () {
+                                var now, _i, _a, user, record;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
+                                        case 0:
+                                            now = new Date();
+                                            _i = 0, _a = self.server.members.map(function (m) { return m.user; });
+                                            _b.label = 1;
+                                        case 1:
+                                            if (!(_i < _a.length)) return [3 /*break*/, 4];
+                                            user = _a[_i];
+                                            return [4 /*yield*/, self.getUserRecord(user.id)];
+                                        case 2:
+                                            record = _b.sent();
+                                            if (!record)
+                                                return [3 /*break*/, 3];
+                                            if (+record.unbanDate === 0)
+                                                return [3 /*break*/, 3];
+                                            else if (record.unbanDate < now.getTime())
+                                                self.unbanUser(user);
+                                            _b.label = 3;
+                                        case 3:
+                                            _i++;
+                                            return [3 /*break*/, 1];
+                                        case 4:
+                                            self.updateUsers();
+                                            now = new Date();
+                                            setTimeout(function () { loop(self); }, 60000 - (now.getTime() % 60000));
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            });
+                        })(this);
                         return [2 /*return*/];
                 }
             });
         });
     };
-    ServerHandler.prototype.addUser = function (id, ib, courses) {
+    ServerHandler.prototype.addUser = function (record) {
         return __awaiter(this, void 0, void 0, function () {
-            var output;
+            var userData, lines, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        output = id + "\t" + (ib ? "y" : "n") + "\t" + courses + "\n";
-                        return [4 /*yield*/, fs_1.promises.appendFile(config.savePath + this.server.id + "/users", output)];
+                        console.log(record);
+                        return [4 /*yield*/, init.readFileIfExists(config.savePath + this.server.id + "/users")];
                     case 1:
+                        userData = _a.sent();
+                        lines = userData.split("\n");
+                        i = 0;
+                        _a.label = 2;
+                    case 2:
+                        if (!(i < lines.length)) return [3 /*break*/, 5];
+                        if (!lines[i].startsWith(record.id)) return [3 /*break*/, 4];
+                        lines[i] = record.toString();
+                        return [4 /*yield*/, fs_1.promises.writeFile(config.savePath + this.server.id + "/users", lines.join("\n"))];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 4:
+                        i++;
+                        return [3 /*break*/, 2];
+                    case 5: return [4 /*yield*/, fs_1.promises.appendFile(config.savePath + this.server.id + "/users", record.toString())];
+                    case 6:
                         _a.sent();
                         return [2 /*return*/];
                 }
@@ -243,30 +293,29 @@ var ServerHandler = /** @class */ (function () {
     };
     ServerHandler.prototype.updateUsers = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var userData, _i, _a, userLine, userValues, member, roles, _loop_1, this_1, _b, _c, roleString, _d, roles_1, role;
+            var userData, _i, _a, userLine, userRecord, member, roles, _loop_1, this_1, _b, _c, roleString, _d, roles_1, role;
             return __generator(this, function (_e) {
                 switch (_e.label) {
-                    case 0: return [4 /*yield*/, init.readFileIfExists(config.savePath + this.server.id + "/users", true)];
+                    case 0: return [4 /*yield*/, init.readFileIfExists(config.savePath + this.server.id + "/users")];
                     case 1:
                         userData = _e.sent();
                         for (_i = 0, _a = userData.split("\n"); _i < _a.length; _i++) {
                             userLine = _a[_i];
                             if (userLine.length == 0)
                                 continue;
-                            userValues = userLine.split("\t");
-                            console.log(userValues);
-                            member = this.server.members.get(userValues[0]);
+                            userRecord = UserRecord_1.default.fromString(userLine);
+                            member = this.server.members.get(userRecord.id);
                             roles = [];
                             _loop_1 = function (roleString) {
                                 if (roleString.length > 0)
                                     roles.push(this_1.server.roles.find(function (r) { return r.name == roleString; }));
                             };
                             this_1 = this;
-                            for (_b = 0, _c = userValues[2].split(","); _b < _c.length; _b++) {
+                            for (_b = 0, _c = userRecord.courses; _b < _c.length; _b++) {
                                 roleString = _c[_b];
                                 _loop_1(roleString);
                             }
-                            if (userValues[1] == "y")
+                            if (userRecord.ib)
                                 roles.push(this.server.roles.find(function (r) { return r.name == "ib"; }));
                             roles.push(this.server.roles.find(function (r) { return r.name == "signed-up"; }));
                             for (_d = 0, roles_1 = roles; _d < roles_1.length; _d++) {
@@ -280,15 +329,95 @@ var ServerHandler = /** @class */ (function () {
             });
         });
     };
+    ServerHandler.prototype.getUserRecord = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var userData, userLine;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, init.readFileIfExists(config.savePath + this.server.id + "/users")];
+                    case 1:
+                        userData = _a.sent();
+                        return [4 /*yield*/, userData.split("\n").find(function (s) { return s.startsWith(id); })];
+                    case 2:
+                        userLine = _a.sent();
+                        if (!userLine)
+                            return [2 /*return*/, null];
+                        return [2 /*return*/, UserRecord_1.default.fromString(userLine)];
+                }
+            });
+        });
+    };
+    ServerHandler.prototype.banUser = function (user, unbanDate) {
+        return __awaiter(this, void 0, void 0, function () {
+            var record, member;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getUserRecord(user.id)];
+                    case 1:
+                        record = _a.sent();
+                        record.unbanDate = unbanDate.getTime();
+                        return [4 /*yield*/, this.addUser(record)];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, this.server.fetchMember(user)];
+                    case 3:
+                        member = _a.sent();
+                        member.removeRoles(member.roles.filter(function (r) { return ["-sl", "-hl"].includes(r.name.slice(-3)); }));
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ServerHandler.prototype.unbanUser = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var record;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getUserRecord(user.id)];
+                    case 1:
+                        record = _a.sent();
+                        record.unbanDate = 0;
+                        return [4 /*yield*/, this.addUser(record)];
+                    case 2:
+                        _a.sent();
+                        this.updateUsers();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ServerHandler.prototype.strikeUser = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var record, unbanDate;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getUserRecord(user.id)];
+                    case 1:
+                        record = _a.sent();
+                        record.strikes++;
+                        if (!(record.strikes >= 3)) return [3 /*break*/, 4];
+                        unbanDate = new Date();
+                        unbanDate.setHours(unbanDate.getHours() + 24);
+                        return [4 /*yield*/, this.addUser(record)];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, this.banUser(user, unbanDate)];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 6];
+                    case 4: return [4 /*yield*/, this.addUser(record)];
+                    case 5:
+                        _a.sent();
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
     ServerHandler.prototype.error = function (err) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                try {
-                    notifications.error(err, this.notificationChannels);
-                }
-                catch (err) {
-                    throw err;
-                }
+                notifications.error(err, this.notificationChannels);
                 return [2 /*return*/];
             });
         });

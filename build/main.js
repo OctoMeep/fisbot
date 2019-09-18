@@ -90,3 +90,16 @@ client.on("message", function (message) {
     else
         dm.handle(message);
 });
+client.on("messageDelete", function (message) { return __awaiter(_this, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                if (!message.guild) return [3 /*break*/, 2];
+                return [4 /*yield*/, message.guild.owner.user.send("\n\t\tServer: " + message.guild.name + "\n\t\tDeletion time: " + new Date() + "\n\t\tSend time: " + message.createdAt + "\n\t\tAuthor: " + message.author + "\n\t\tContent: " + message.content + "\n\t")];
+            case 1:
+                _a.sent();
+                _a.label = 2;
+            case 2: return [2 /*return*/];
+        }
+    });
+}); });
