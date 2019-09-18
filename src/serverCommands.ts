@@ -12,7 +12,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				const unbanDate = record.unbanDate instanceof Date ? record.unbanDate : new Date(record.unbanDate);
 				message.reply(`
 You have signed up for the following courses: ${record.courses.join(", ")}.
-You ${record.ib ? "" : "do not"} take the full IBDP.
+You ${record.ib ? "" : "do not "}take the full IBDP.
 You have ${record.strikes} strikes.
 You are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
 				`);
