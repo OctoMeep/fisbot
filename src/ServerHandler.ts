@@ -53,6 +53,8 @@ export default class ServerHandler {
 				categoryChannels.push(categoryChannel);
 			}
 
+			await util.ensureRole(this.server, "banned", "RED");
+			console.log("Ensured role banned");
 			await util.ensureRole(this.server, "signed-up", "AQUA");
 			console.log("Ensured role signed-up");
 			await util.ensureRole(this.server, "ib", "AQUA");
@@ -176,13 +178,16 @@ export default class ServerHandler {
 		record.unbanDate = unbanDate.getTime();
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
-		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3))));
+		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name)));
+		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "banned"));
 	}
 
 	async unbanUser(user: Discord.User): Promise<void> {
 		const record = await this.getUserRecord(user.id);
 		record.unbanDate = 0;
 		await this.addUser(record);
+		const member = await this.server.fetchMember(user);
+		member.removeRole(member.roles.find((r: Discord.Role) => r.name === "banned"));
 		this.updateUsers();
 	}
 
@@ -196,6 +201,14 @@ export default class ServerHandler {
 			await this.banUser(user, unbanDate);
 		} else await this.addUser(record);
 
+	}
+
+	async unstrikeUser(user: Discord.User): Promise<boolean> {
+		const record = await this.getUserRecord(user.id);
+		if (record.strikes === 0) return false;
+		else record.strikes--;
+		await this.addUser(record);
+		return true;
 	}
 
 	async error(err: Error): Promise<void> {

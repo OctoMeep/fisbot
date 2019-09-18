@@ -54,5 +54,18 @@ You are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
 				} else await message.channel.send(`${user.username} has not signed up yet.`);
 			}
 			break;
+		case "unstrike":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			for (const user of Array.from(message.mentions.users.values())) {
+				if (handler.getUserRecord(user.id)) {
+					const result = await handler.unstrikeUser(user);
+					if (result) await message.channel.send(`Removed 1 strike for ${user.username}.`);
+					if (!result) await message.channel.send(`${user.username} has no strikes.`);
+				} else await message.channel.send(`${user.username} has not signed up yet.`);
+			}
+			break;
 	}
 }

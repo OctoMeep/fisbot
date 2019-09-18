@@ -19,10 +19,7 @@ client.on("ready", async () => {
 	});
 	dm = new DMHandler(client, serverHandlers);
 
-	process.on("unhandledRejection", (err, promise) => {
-		// This should only happen because a .send failed -> connection issue
-		console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
-	});
+	
 
 	initialized = true;
 
@@ -49,3 +46,8 @@ client.on("messageDelete", async (message: Message) => {
 		Content: ${message.content}
 	`);
 });
+
+process.on("unhandledRejection", (err, promise) => {
+		// This should only happen because a .send failed -> connection issue
+		console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
+	});
