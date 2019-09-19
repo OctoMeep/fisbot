@@ -59,7 +59,7 @@ exports.handleMessage = function (message, handler) { return __awaiter(_this, vo
                     message.reply("You have not signed up.");
                 else {
                     unbanDate_1 = record.unbanDate instanceof Date ? record.unbanDate : new Date(record.unbanDate);
-                    message.reply("\nYou have signed up for the following courses: " + record.courses.join(", ") + ".\nYou " + (record.ib ? "" : "do not") + " take the full IBDP.\nYou have " + record.strikes + " strikes.\nYou are " + (record.unbanDate === 0 ? "not banned" : "banned until " + unbanDate_1) + ".\n\t\t\t\t");
+                    message.reply("\nYou have signed up for the following courses: " + record.courses.join(", ") + ".\nYou " + (record.ib ? "" : "do not ") + "take the full IBDP.\nYou have " + record.strikes + " strikes.\nYou are " + (record.unbanDate === 0 ? "not banned" : "banned until " + unbanDate_1) + ".\n\t\t\t\t");
                 }
                 return [3 /*break*/, 40];
             case 3:
