@@ -39,11 +39,11 @@ client.on("message", (message: Message) => {
 
 client.on("messageDelete", async (message: Message) => {
 	if (message.guild) await message.guild.owner.user.send(`
-		Server: ${message.guild.name}
-		Deletion time: ${new Date()}
-		Send time: ${message.createdAt}
-		Author: ${message.author}
-		Content: ${message.content}
+Server: ${message.guild.name}
+Deletion time: ${new Date()}
+Send time: ${message.createdAt}
+Author: ${message.author}
+Content: ${message.content}
 	`);
 });
 

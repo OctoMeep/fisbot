@@ -124,8 +124,11 @@ export default class ServerHandler {
 			for (const user of self.server.members.map((m: Discord.GuildMember) => m.user)) {
 				const record = await self.getUserRecord(user.id);
 				if (!record) continue;
-				if (+record.unbanDate === 0) continue;
-				else if (record.unbanDate < now.getTime()) self.unbanUser(user);
+				const unbanTime = record.unbanDate instanceof Date ? record.unbanDate.getTime() : record.unbanDate;
+				console.log(unbanTime);
+				console.log(now.getTime());
+				if (unbanTime === 0) continue;
+				if (unbanTime < now.getTime()) self.unbanUser(user);
 			}
 			self.updateUsers();
 			now = new Date();
@@ -179,7 +182,10 @@ export default class ServerHandler {
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
 		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name)));
-		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "banned"));
+		member.addRole(this.server.roles.find((r: Discord.Role) => {
+			console.log(r.name);
+			return r.name === "banned"
+		}));
 	}
 
 	async unbanUser(user: Discord.User): Promise<void> {
@@ -187,7 +193,11 @@ export default class ServerHandler {
 		record.unbanDate = 0;
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
-		member.removeRole(member.roles.find((r: Discord.Role) => r.name === "banned"));
+		const role = member.roles.find((r: Discord.Role) => {
+			console.log(r.name);
+			return r.name === "banned";
+		});
+		if (role) member.removeRole(role);
 		this.updateUsers();
 	}
 

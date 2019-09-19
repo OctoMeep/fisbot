@@ -226,7 +226,7 @@ var ServerHandler = /** @class */ (function () {
                         this.active = true;
                         (function loop(self) {
                             return __awaiter(this, void 0, void 0, function () {
-                                var now, _i, _a, user, record;
+                                var now, _i, _a, user, record, unbanTime;
                                 return __generator(this, function (_b) {
                                     switch (_b.label) {
                                         case 0:
@@ -241,9 +241,12 @@ var ServerHandler = /** @class */ (function () {
                                             record = _b.sent();
                                             if (!record)
                                                 return [3 /*break*/, 3];
-                                            if (+record.unbanDate === 0)
+                                            unbanTime = record.unbanDate instanceof Date ? record.unbanDate.getTime() : record.unbanDate;
+                                            console.log(unbanTime);
+                                            console.log(now.getTime());
+                                            if (unbanTime === 0)
                                                 return [3 /*break*/, 3];
-                                            else if (record.unbanDate < now.getTime())
+                                            if (unbanTime < now.getTime())
                                                 self.unbanUser(user);
                                             _b.label = 3;
                                         case 3:
@@ -367,7 +370,10 @@ var ServerHandler = /** @class */ (function () {
                     case 3:
                         member = _a.sent();
                         member.removeRoles(member.roles.filter(function (r) { return ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name); }));
-                        member.addRole(this.server.roles.find(function (r) { return r.name === "banned"; }));
+                        member.addRole(this.server.roles.find(function (r) {
+                            console.log(r.name);
+                            return r.name === "banned";
+                        }));
                         return [2 /*return*/];
                 }
             });
@@ -375,7 +381,7 @@ var ServerHandler = /** @class */ (function () {
     };
     ServerHandler.prototype.unbanUser = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var record, member;
+            var record, member, role;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getUserRecord(user.id)];
@@ -388,7 +394,12 @@ var ServerHandler = /** @class */ (function () {
                         return [4 /*yield*/, this.server.fetchMember(user)];
                     case 3:
                         member = _a.sent();
-                        member.removeRole(member.roles.find(function (r) { return r.name === "banned"; }));
+                        role = member.roles.find(function (r) {
+                            console.log(r.name);
+                            return r.name === "banned";
+                        });
+                        if (role)
+                            member.removeRole(role);
                         this.updateUsers();
                         return [2 /*return*/];
                 }
