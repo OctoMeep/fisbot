@@ -44,6 +44,7 @@ Deletion time: ${new Date()}
 Send time: ${message.createdAt}
 Author: ${message.author}
 Content: ${message.content}
+
 	`);
 });
 

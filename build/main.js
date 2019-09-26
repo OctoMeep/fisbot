@@ -91,7 +91,7 @@ client.on("messageDelete", function (message) { return __awaiter(_this, void 0, 
         switch (_a.label) {
             case 0:
                 if (!message.guild) return [3 /*break*/, 2];
-                return [4 /*yield*/, message.guild.owner.user.send("\nServer: " + message.guild.name + "\nDeletion time: " + new Date() + "\nSend time: " + message.createdAt + "\nAuthor: " + message.author + "\nContent: " + message.content + "\n\t")];
+                return [4 /*yield*/, message.guild.owner.user.send("\nServer: " + message.guild.name + "\nDeletion time: " + new Date() + "\nSend time: " + message.createdAt + "\nAuthor: " + message.author + "\nContent: " + message.content + "\n\n\t")];
             case 1:
                 _a.sent();
                 _a.label = 2;

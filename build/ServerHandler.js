@@ -311,6 +311,8 @@ var ServerHandler = /** @class */ (function () {
                             if (userLine.length == 0)
                                 continue;
                             userRecord = UserRecord_1.default.fromString(userLine);
+                            if (userRecord.unbanDate)
+                                continue;
                             member = this.server.members.get(userRecord.id);
                             roles = [];
                             _loop_1 = function (roleString) {
@@ -371,7 +373,6 @@ var ServerHandler = /** @class */ (function () {
                         member = _a.sent();
                         member.removeRoles(member.roles.filter(function (r) { return ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name); }));
                         member.addRole(this.server.roles.find(function (r) {
-                            console.log(r.name);
                             return r.name === "banned";
                         }));
                         return [2 /*return*/];
@@ -395,7 +396,6 @@ var ServerHandler = /** @class */ (function () {
                     case 3:
                         member = _a.sent();
                         role = member.roles.find(function (r) {
-                            console.log(r.name);
                             return r.name === "banned";
                         });
                         if (role)

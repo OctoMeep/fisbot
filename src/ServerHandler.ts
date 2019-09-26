@@ -156,6 +156,7 @@ export default class ServerHandler {
 		for (const userLine of userData.split("\n")) {
 			if (userLine.length == 0) continue;
 			const userRecord = UserRecord.fromString(userLine);
+			if (userRecord.unbanDate) continue;
 			const member = this.server.members.get(userRecord.id);
 			const roles = [];
 			for (const roleString of userRecord.courses) {
@@ -183,7 +184,6 @@ export default class ServerHandler {
 		const member = await this.server.fetchMember(user);
 		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name)));
 		member.addRole(this.server.roles.find((r: Discord.Role) => {
-			console.log(r.name);
 			return r.name === "banned"
 		}));
 	}
@@ -194,7 +194,6 @@ export default class ServerHandler {
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
 		const role = member.roles.find((r: Discord.Role) => {
-			console.log(r.name);
 			return r.name === "banned";
 		});
 		if (role) member.removeRole(role);

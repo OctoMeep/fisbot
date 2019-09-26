@@ -37,9 +37,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleMessage = function (message, handler) { return __awaiter(_this, void 0, void 0, function () {
-    var args, _a, record, unbanDate_1, time, unbanDate, _i, _b, user, _c, _d, user, _e, _f, user, result;
-    return __generator(this, function (_g) {
-        switch (_g.label) {
+    var args, _a, record, unbanDate_1, time, unbanDate, _i, _b, member, user, _c, _d, member, user, _e, _f, member, user, result, _g, _h, channel;
+    return __generator(this, function (_j) {
+        switch (_j.label) {
             case 0:
                 if (!message.content.startsWith("!"))
                     return [2 /*return*/];
@@ -48,128 +48,150 @@ exports.handleMessage = function (message, handler) { return __awaiter(_this, vo
                 switch (_a) {
                     case "status": return [3 /*break*/, 1];
                     case "ban": return [3 /*break*/, 3];
-                    case "strike": return [3 /*break*/, 17];
-                    case "unstrike": return [3 /*break*/, 27];
+                    case "strike": return [3 /*break*/, 18];
+                    case "unstrike": return [3 /*break*/, 29];
+                    case "fixAdmin": return [3 /*break*/, 43];
                 }
-                return [3 /*break*/, 40];
+                return [3 /*break*/, 46];
             case 1: return [4 /*yield*/, handler.getUserRecord(message.author.id)];
             case 2:
-                record = _g.sent();
+                record = _j.sent();
                 if (!record)
                     message.reply("You have not signed up.");
                 else {
                     unbanDate_1 = record.unbanDate instanceof Date ? record.unbanDate : new Date(record.unbanDate);
                     message.reply("\nYou have signed up for the following courses: " + record.courses.join(", ") + ".\nYou " + (record.ib ? "" : "do not ") + "take the full IBDP.\nYou have " + record.strikes + " strikes.\nYou are " + (record.unbanDate === 0 ? "not banned" : "banned until " + unbanDate_1) + ".\n\t\t\t\t");
                 }
-                return [3 /*break*/, 40];
+                return [3 /*break*/, 46];
             case 3:
                 if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 5];
                 return [4 /*yield*/, message.channel.send("Only admins can use this command.")];
             case 4:
-                _g.sent();
+                _j.sent();
                 return [2 /*return*/];
             case 5:
                 if (!(args.length < 2)) return [3 /*break*/, 7];
                 return [4 /*yield*/, message.channel.send("You must specify a time to ban for.")];
             case 6:
-                _g.sent();
+                _j.sent();
                 return [2 /*return*/];
             case 7:
                 time = +args[1];
                 if (!!time) return [3 /*break*/, 9];
                 return [4 /*yield*/, message.channel.send("Invalid time.")];
             case 8:
-                _g.sent();
+                _j.sent();
                 return [2 /*return*/];
             case 9:
                 unbanDate = new Date();
                 unbanDate.setHours(unbanDate.getHours() + time);
-                _i = 0, _b = Array.from(message.mentions.users.values());
-                _g.label = 10;
+                _i = 0, _b = Array.from(message.mentions.members.values());
+                _j.label = 10;
             case 10:
-                if (!(_i < _b.length)) return [3 /*break*/, 16];
-                user = _b[_i];
-                if (!handler.getUserRecord(user.id)) return [3 /*break*/, 13];
-                return [4 /*yield*/, handler.banUser(user, unbanDate)];
+                if (!(_i < _b.length)) return [3 /*break*/, 17];
+                member = _b[_i];
+                user = member.user;
+                return [4 /*yield*/, handler.getUserRecord(user.id)];
             case 11:
-                _g.sent();
-                return [4 /*yield*/, message.channel.send("Banned " + user.username + " until " + unbanDate + ".")];
+                if (!_j.sent()) return [3 /*break*/, 14];
+                return [4 /*yield*/, handler.banUser(user, unbanDate)];
             case 12:
-                _g.sent();
-                return [3 /*break*/, 15];
-            case 13: return [4 /*yield*/, message.channel.send(user.username + " has not signed up yet.")];
-            case 14:
-                _g.sent();
-                _g.label = 15;
+                _j.sent();
+                return [4 /*yield*/, message.channel.send("Banned " + (member.nickname || user.username) + " until " + unbanDate + ".")];
+            case 13:
+                _j.sent();
+                return [3 /*break*/, 16];
+            case 14: return [4 /*yield*/, message.channel.send((member.nickname || user.username) + " has not signed up yet.")];
             case 15:
+                _j.sent();
+                _j.label = 16;
+            case 16:
                 _i++;
                 return [3 /*break*/, 10];
-            case 16: return [3 /*break*/, 40];
-            case 17:
-                if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 19];
-                return [4 /*yield*/, message.channel.send("Only admins can use this command.")];
+            case 17: return [3 /*break*/, 46];
             case 18:
-                _g.sent();
-                return [2 /*return*/];
-            case 19:
-                _c = 0, _d = Array.from(message.mentions.users.values());
-                _g.label = 20;
-            case 20:
-                if (!(_c < _d.length)) return [3 /*break*/, 26];
-                user = _d[_c];
-                if (!handler.getUserRecord(user.id)) return [3 /*break*/, 23];
-                return [4 /*yield*/, handler.strikeUser(user)];
-            case 21:
-                _g.sent();
-                return [4 /*yield*/, message.channel.send("Added 1 strike for " + user.username + ".")];
-            case 22:
-                _g.sent();
-                return [3 /*break*/, 25];
-            case 23: return [4 /*yield*/, message.channel.send(user.username + " has not signed up yet.")];
-            case 24:
-                _g.sent();
-                _g.label = 25;
-            case 25:
-                _c++;
-                return [3 /*break*/, 20];
-            case 26: return [3 /*break*/, 40];
-            case 27:
-                if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 29];
+                if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 20];
                 return [4 /*yield*/, message.channel.send("Only admins can use this command.")];
-            case 28:
-                _g.sent();
+            case 19:
+                _j.sent();
                 return [2 /*return*/];
+            case 20:
+                _c = 0, _d = Array.from(message.mentions.members.values());
+                _j.label = 21;
+            case 21:
+                if (!(_c < _d.length)) return [3 /*break*/, 28];
+                member = _d[_c];
+                user = member.user;
+                return [4 /*yield*/, handler.getUserRecord(user.id)];
+            case 22:
+                if (!_j.sent()) return [3 /*break*/, 25];
+                return [4 /*yield*/, handler.strikeUser(user)];
+            case 23:
+                _j.sent();
+                return [4 /*yield*/, message.channel.send("Added 1 strike for " + (member.nickname || user.username) + ".")];
+            case 24:
+                _j.sent();
+                return [3 /*break*/, 27];
+            case 25: return [4 /*yield*/, message.channel.send((member.nickname || user.username) + " has not signed up yet.")];
+            case 26:
+                _j.sent();
+                _j.label = 27;
+            case 27:
+                _c++;
+                return [3 /*break*/, 21];
+            case 28: return [3 /*break*/, 46];
             case 29:
-                _e = 0, _f = Array.from(message.mentions.users.values());
-                _g.label = 30;
+                if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 31];
+                return [4 /*yield*/, message.channel.send("Only admins can use this command.")];
             case 30:
-                if (!(_e < _f.length)) return [3 /*break*/, 39];
-                user = _f[_e];
-                if (!handler.getUserRecord(user.id)) return [3 /*break*/, 36];
-                return [4 /*yield*/, handler.unstrikeUser(user)];
+                _j.sent();
+                return [2 /*return*/];
             case 31:
-                result = _g.sent();
-                if (!result) return [3 /*break*/, 33];
-                return [4 /*yield*/, message.channel.send("Removed 1 strike for " + user.username + ".")];
+                _e = 0, _f = Array.from(message.mentions.members.values());
+                _j.label = 32;
             case 32:
-                _g.sent();
-                _g.label = 33;
+                if (!(_e < _f.length)) return [3 /*break*/, 42];
+                member = _f[_e];
+                user = member.user;
+                return [4 /*yield*/, handler.getUserRecord(user.id)];
             case 33:
-                if (!!result) return [3 /*break*/, 35];
-                return [4 /*yield*/, message.channel.send(user.username + " has no strikes.")];
+                if (!_j.sent()) return [3 /*break*/, 39];
+                return [4 /*yield*/, handler.unstrikeUser(user)];
             case 34:
-                _g.sent();
-                _g.label = 35;
-            case 35: return [3 /*break*/, 38];
-            case 36: return [4 /*yield*/, message.channel.send(user.username + " has not signed up yet.")];
+                result = _j.sent();
+                if (!result) return [3 /*break*/, 36];
+                return [4 /*yield*/, message.channel.send("Removed 1 strike for " + (member.nickname || user.username) + ".")];
+            case 35:
+                _j.sent();
+                _j.label = 36;
+            case 36:
+                if (!!result) return [3 /*break*/, 38];
+                return [4 /*yield*/, message.channel.send((member.nickname || user.username) + " has no strikes.")];
             case 37:
-                _g.sent();
-                _g.label = 38;
-            case 38:
+                _j.sent();
+                _j.label = 38;
+            case 38: return [3 /*break*/, 41];
+            case 39: return [4 /*yield*/, message.channel.send((member.nickname || user.username) + " has not signed up yet.")];
+            case 40:
+                _j.sent();
+                _j.label = 41;
+            case 41:
                 _e++;
-                return [3 /*break*/, 30];
-            case 39: return [3 /*break*/, 40];
-            case 40: return [2 /*return*/];
+                return [3 /*break*/, 32];
+            case 42: return [3 /*break*/, 46];
+            case 43:
+                if (!!message.member.roles.find(function (r) { return r.name == "Admin"; })) return [3 /*break*/, 45];
+                return [4 /*yield*/, message.channel.send("Only admins can use this command.")];
+            case 44:
+                _j.sent();
+                return [2 /*return*/];
+            case 45:
+                for (_g = 0, _h = Array.from(message.guild.channels.values()); _g < _h.length; _g++) {
+                    channel = _h[_g];
+                    channel.overwritePermissions(message.guild.roles.find(function (r) { return r.name == "Admin"; }), { "VIEW_CHANNEL": true });
+                }
+                _j.label = 46;
+            case 46: return [2 /*return*/];
         }
     });
 }); };

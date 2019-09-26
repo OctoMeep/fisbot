@@ -35,11 +35,12 @@ You are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
 			const unbanDate = new Date();
 			unbanDate.setHours(unbanDate.getHours() + time);
 
-			for (const user of Array.from(message.mentions.users.values())) {
-				if (handler.getUserRecord(user.id)) {
+			for (const member of Array.from(message.mentions.members.values())) {
+				const user = member.user;
+				if (await handler.getUserRecord(user.id)) {
 					await handler.banUser(user, unbanDate);
-					await message.channel.send(`Banned ${user.username} until ${unbanDate}.`);
-				} else await message.channel.send(`${user.username} has not signed up yet.`);
+					await message.channel.send(`Banned ${member.nickname || user.username} until ${unbanDate}.`);
+				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
 			}
 			break;
 		case "strike":
@@ -47,11 +48,12 @@ You are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
-			for (const user of Array.from(message.mentions.users.values())) {
-				if (handler.getUserRecord(user.id)) {
+			for (const member of Array.from(message.mentions.members.values())) {
+				const user = member.user;
+				if (await handler.getUserRecord(user.id)) {
 					await handler.strikeUser(user);
-					await message.channel.send(`Added 1 strike for ${user.username}.`);
-				} else await message.channel.send(`${user.username} has not signed up yet.`);
+					await message.channel.send(`Added 1 strike for ${member.nickname || user.username}.`);
+				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
 			}
 			break;
 		case "unstrike":
@@ -59,13 +61,23 @@ You are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
-			for (const user of Array.from(message.mentions.users.values())) {
-				if (handler.getUserRecord(user.id)) {
+			for (const member of Array.from(message.mentions.members.values())) {
+				const user = member.user;
+				if (await handler.getUserRecord(user.id)) {
 					const result = await handler.unstrikeUser(user);
-					if (result) await message.channel.send(`Removed 1 strike for ${user.username}.`);
-					if (!result) await message.channel.send(`${user.username} has no strikes.`);
-				} else await message.channel.send(`${user.username} has not signed up yet.`);
+					if (result) await message.channel.send(`Removed 1 strike for ${member.nickname || user.username}.`);
+					if (!result) await message.channel.send(`${member.nickname || user.username} has no strikes.`);
+				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
 			}
 			break;
+		case "fixAdmin":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			for (const channel of Array.from(message.guild.channels.values())) {
+				channel.overwritePermissions(message.guild.roles.find((r: Discord.Role) => r.name == "Admin"), {"VIEW_CHANNEL": true})
+			}
+
 	}
 }
