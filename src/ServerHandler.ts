@@ -148,7 +148,7 @@ export default class ServerHandler {
 				return;
 			}		
 		}
-		await fsp.appendFile(config.savePath + this.server.id + "/users", record.toString())
+		await fsp.appendFile(config.savePath + this.server.id + "/users", "\n" + record.toString())
 	}
 
 	async updateUsers(): Promise<void> {
