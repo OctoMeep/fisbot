@@ -290,7 +290,7 @@ var ServerHandler = /** @class */ (function () {
                     case 4:
                         i++;
                         return [3 /*break*/, 2];
-                    case 5: return [4 /*yield*/, fs_1.promises.appendFile(config.savePath + this.server.id + "/users", record.toString())];
+                    case 5: return [4 /*yield*/, fs_1.promises.appendFile(config.savePath + this.server.id + "/users", "\n" + record.toString())];
                     case 6:
                         _a.sent();
                         return [2 /*return*/];
