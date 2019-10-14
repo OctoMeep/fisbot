@@ -125,8 +125,6 @@ export default class ServerHandler {
 				const record = await self.getUserRecord(user.id);
 				if (!record) continue;
 				const unbanTime = record.unbanDate instanceof Date ? record.unbanDate.getTime() : record.unbanDate;
-				console.log(unbanTime);
-				console.log(now.getTime());
 				if (unbanTime === 0) continue;
 				if (unbanTime < now.getTime()) self.unbanUser(user);
 			}
