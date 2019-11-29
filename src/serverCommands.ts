@@ -88,6 +88,26 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
 			}
 			break;
+		case "mute":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			for (const member of Array.from(message.mentions.members.values())) {
+				await handler.muteUser(member.user);
+				await message.channel.send(`Muted ${member.nickname || member.user.username}`);
+			}
+			break;
+		case "unmute":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			for (const member of Array.from(message.mentions.members.values())) {
+				await handler.unmuteUser(member.user);
+				await message.channel.send(`Unmuted ${member.nickname || member.user.username}`);
+			}
+			break;
 		case "fixAdmin":
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");

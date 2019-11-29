@@ -216,6 +216,18 @@ export default class ServerHandler {
 		return true;
 	}
 
+	async muteUser(user: Discord.User, reason?: string): Promise<void> {
+		const member = await this.server.fetchMember(user);
+		const role = this.server.roles.find((r: Discord.Role) => r.name === "muted")
+		member.addRole(role, reason);
+	}
+
+	async unmuteUser(user: Discord.User, reason?: string): Promise<void> {
+		const member = await this.server.fetchMember(user);
+		const role = member.roles.find((r: Discord.Role) => r.name === "muted")
+		if (role) member.removeRole(role, reason);
+	}
+
 	async notify(msg: string): Promise<void> {
 		for (const channel of this.notificationChannels) {
 			channel.send(msg);

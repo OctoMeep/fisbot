@@ -54,11 +54,11 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 		id: everyone,
 		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
 	});
-	permissionOverwrites.push({
-		id: muted,
-		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
-	});
 	if (!roles.includes("*")) {
+		permissionOverwrites.push({
+			id: muted,
+			deny: Discord.Permissions.FLAGS.SEND_MESSAGES
+		});
 		permissionOverwrites.push({
 			id: everyone,
 			deny: Discord.Permissions.FLAGS.VIEW_CHANNEL
