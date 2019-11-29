@@ -3,7 +3,6 @@ import { promises as fsp } from "fs";
 import * as config from "./config.json";
 import * as init from "./init";
 import * as util from "./util";
-import * as notifications from "./notifications";
 import ChannelSetting from "./ChannelSetting";
 import * as serverCommands from "./serverCommands";
 import UserRecord from "./UserRecord"
@@ -15,7 +14,7 @@ export default class ServerHandler {
 	initialized: boolean;
 	active: boolean;
 	courses: ChannelSetting[];
-	notificationChannels: Discord.Channel[];
+	notificationChannels: Discord.TextChannel[];
 
 	constructor (client: Discord.Client, server: Discord.Guild) {
 		this.client = client;
@@ -29,13 +28,13 @@ export default class ServerHandler {
 	async handleMessage (message: Discord.Message): Promise<void> {
 		if (!(message.channel instanceof Discord.TextChannel)) return;
 		if (message.author.bot) return;
-		if (!this.initialized) await this.initialize(message);
+		if (!this.initialized) await this.initialize(false, message);
 		if (!this.active) return;
 
 		if (message.content.startsWith("!")) serverCommands.handleMessage(message, this);
 	}
 
-	async initialize(message?: Discord.Message): Promise<void> {
+	async initialize(reset?: boolean, message?: Discord.Message): Promise<void> {
 		if (message && !(message.channel instanceof Discord.TextChannel)) return;
 		this.active = false;
 		let categories = [];
@@ -55,6 +54,8 @@ export default class ServerHandler {
 
 			await util.ensureRole(this.server, "banned", "RED");
 			console.log("Ensured role banned");
+			await util.ensureRole(this.server, "muted", "orange");
+			console.log("Ensured role muted");
 			await util.ensureRole(this.server, "signed-up", "AQUA");
 			console.log("Ensured role signed-up");
 			await util.ensureRole(this.server, "ib", "AQUA");
@@ -78,32 +79,32 @@ export default class ServerHandler {
 			for (const channel of channels) {
 				switch (channel.structure) {
 					case 0:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						break;
 					case 1:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						break;
 					case 2:
-						const notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true);
+						const notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.notificationChannels.push(notificationChannel);
 						break;
 					case 3:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl"], false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl"], false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 4:
-						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false);
+						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
 					case 5:
-						await util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false);
+						await util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false, reset);
 						console.log(`Ensured channel ${channel.name + "-sl"}`);
-						await util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false);
+						await util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false, reset);
 						console.log(`Ensured channel ${channel.name + "-hl"}`);
 						this.courses.push(channel);
 						break;
@@ -111,10 +112,8 @@ export default class ServerHandler {
 				}
 			}
 		} catch (err) {
-			notifications.error(err, message && message.channel as Discord.TextChannel);
+			this.notify("Error during setup, please notify an administrator:\n" + err.stack);
 		}
-
-
 
 		this.initialized = true;
 		this.active = true;
@@ -133,6 +132,7 @@ export default class ServerHandler {
 			setTimeout(() => {loop(self)}, 60000 - (now.getTime() % 60000));
 		})(this);
 
+		this.notify("Setup complete, the bot is now operational.");
 	}
 
 	async addUser(record: UserRecord): Promise<void> {
@@ -175,15 +175,13 @@ export default class ServerHandler {
 		return UserRecord.fromString(userLine);
 	}
 
-	async banUser(user: Discord.User, unbanDate): Promise<void> {
+	async banUser(user: Discord.User, unbanDate, reason?: string): Promise<void> {
 		const record = await this.getUserRecord(user.id);
 		record.unbanDate = unbanDate.getTime();
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
 		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name)));
-		member.addRole(this.server.roles.find((r: Discord.Role) => {
-			return r.name === "banned"
-		}));
+		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "banned"), reason);
 	}
 
 	async unbanUser(user: Discord.User): Promise<void> {
@@ -218,7 +216,9 @@ export default class ServerHandler {
 		return true;
 	}
 
-	async error(err: Error): Promise<void> {
-		notifications.error(err, this.notificationChannels as Discord.TextChannel[]);
+	async notify(msg: string): Promise<void> {
+		for (const channel of this.notificationChannels) {
+			channel.send(msg);
+		}
 	}
 }

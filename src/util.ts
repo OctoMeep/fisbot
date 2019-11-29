@@ -6,13 +6,12 @@ export const ensureDir = async (dirPath: string) => {
 	let dirStats: fs.Stats;
 	try {
 		dirStats = await fsp.stat(dirPath);
+		if (!dirStats.isDirectory) throw "Path exists and is not a directory!";
 	} catch (err) {
 		if (err.code == "ENOENT") {
 			await fsp.mkdir(dirPath);
 			dirStats = await fsp.stat(dirPath);
 		} else throw err;
-	} finally {
-		if (!dirStats.isDirectory) throw new Error("Path exists and is not a directory!");
 	}
 }
 
@@ -36,21 +35,27 @@ export const ensureRole = async (server: Discord.Guild, name: string, color?: st
 	else return await server.createRole({
 		name,
 		mentionable: true,
-		color
+		color,
+		permissions: 0 //37084224
 	});
 }
 
-export const ensureChannel = async (server: Discord.Guild, name: string, category: Discord.CategoryChannel, roles: string[], readOnly: boolean): Promise<Discord.TextChannel> => {
+export const ensureChannel = async (server: Discord.Guild, name: string, category: Discord.CategoryChannel, roles: string[], readOnly: boolean, reset?: boolean): Promise<Discord.TextChannel> => {
 	let channel = server.channels.find(c => c.name == name);
 	if (channel) {
-		if (!(channel instanceof Discord.TextChannel)) throw new Error(`Channel ${name} exists but is not a text channel.`);
-		return channel;
+		if (!(channel instanceof Discord.TextChannel)) throw `Channel ${name} exists but is not a text channel.`;
+		if (!reset) return channel;
 	}
 	let permissionOverwrites = [];
 	const everyone = server.roles.find(r => r.name == "@everyone")
+	const muted = server.roles.find(r => r.name == "muted")
 	if (!everyone) throw "\"@everyone\" role does not exist";
 	if (readOnly) permissionOverwrites.push({
 		id: everyone,
+		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
+	});
+	permissionOverwrites.push({
+		id: muted,
 		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
 	});
 	if (!roles.includes("*")) {
@@ -67,11 +72,12 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 			});
 		});
 	}
-	channel = await server.createChannel(name, {
+	if (!channel) channel = await server.createChannel(name, {
 		type: "text",
 		permissionOverwrites,
 		parent: category
 	});
+	else if (reset) channel.replacePermissionOverwrites({overwrites: permissionOverwrites});
 	if (!(channel instanceof Discord.TextChannel)) throw new Error("This should never happen");
 	return channel;
 }

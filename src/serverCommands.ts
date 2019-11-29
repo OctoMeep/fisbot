@@ -21,12 +21,15 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 	const args = message.content.slice(1).split(" ");
 	switch (args[0]) {
 		case "status":
-			if (message.mentions.members.size == 0) {
-				const status = await getStatus(message.member, handler)
-				console.log(status);
-				await message.channel.send(status);
+			const members = [];
+			for (const arg of args.slice(1)) {
+				for (const member of Array.from(message.guild.members.values())) {
+					if (arg === member.nickname || arg === member.user.username) {
+						members.push(member);
+					}
+				}
 			}
-			else for (const member of Array.from(message.mentions.members.values())) {
+			for (const member of members) {
 				await message.channel.send(await getStatus(member, handler));
 			}
 			break;
@@ -35,8 +38,8 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
-			if (args.length < 2) {
-				await message.channel.send("You must specify a time to ban for.");
+			if (args.length < 3) {
+				await message.channel.send("You must specify a time to ban for and a reason.");
 				return;
 			}
 			const time = +args[1];
@@ -44,13 +47,16 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				await message.channel.send("Invalid time.");
 				return;
 			}
+
+			const reason = args[2];
+
 			const unbanDate = new Date();
 			unbanDate.setHours(unbanDate.getHours() + time);
 
 			for (const member of Array.from(message.mentions.members.values())) {
 				const user = member.user;
 				if (await handler.getUserRecord(user.id)) {
-					await handler.banUser(user, unbanDate);
+					await handler.banUser(user, unbanDate, reason);
 					await message.channel.send(`Banned ${member.nickname || user.username} until ${unbanDate}.`);
 				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
 			}
@@ -90,6 +96,24 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			for (const channel of Array.from(message.guild.channels.values())) {
 				channel.overwritePermissions(message.guild.roles.find((r: Discord.Role) => r.name == "Admin"), {"VIEW_CHANNEL": true})
 			}
+			break;
+		case "init":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			await message.channel.send("Rerunning initialization for this server");
+			handler.initialize();
+			break;
+		case "init-reset":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			await message.channel.send("Rerunning initialization for this server and resetting channel permissions");
+			handler.initialize(true);
+			break;
+
 
 	}
 }
