@@ -49,10 +49,15 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 	let permissionOverwrites = [];
 	const everyone = server.roles.find(r => r.name == "@everyone")
 	const muted = server.roles.find(r => r.name == "muted")
+	const admin = server.roles.find(r => r.name == "Admin")
 	if (!everyone) throw "\"@everyone\" role does not exist";
 	if (readOnly) permissionOverwrites.push({
 		id: everyone,
 		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
+	});
+	permissionOverwrites.push({
+		id: admin,
+		allow: Discord.Permissions.FLAGS.VIEW_CHANNEL
 	});
 	if (!roles.includes("*")) {
 		permissionOverwrites.push({
