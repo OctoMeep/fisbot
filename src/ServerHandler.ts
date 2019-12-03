@@ -41,17 +41,23 @@ export default class ServerHandler {
 		const categoryChannels: Discord.CategoryChannel[] = [];
 		let channels: ChannelSetting[] = [];
 		const dirPath = config.savePath + this.server.id;
+		console.log("Setting up using config in " + dirPath);
 		try {
 			await util.ensureDir(config.savePath);
 			await util.ensureDir(dirPath);
 			categories = await init.getCategories(this.server);
 			channels = await init.getChannels(this.server);
+			console.log("Ensuring categories");
+			console.log(categories);
 			for (const category of categories) {
+				console.log("Ensuring " + category);
 				const categoryChannel = await util.ensureCategory(this.server, category);
 				console.log(`Ensured category ${category}`);
 				categoryChannels.push(categoryChannel);
 			}
 
+			await util.ensureRole(this.server, "Admin", "YELLOW");
+			console.log("Ensured role Admin");
 			await util.ensureRole(this.server, "banned", "RED");
 			console.log("Ensured role banned");
 			await util.ensureRole(this.server, "muted", "orange");
@@ -61,6 +67,7 @@ export default class ServerHandler {
 			await util.ensureRole(this.server, "ib", "AQUA");
 			console.log("Ensured role ib");
 
+			console.log("Ensuring roles");
 			for (const channel of channels) {
 				switch (channel.structure) {
 					case 3:
@@ -76,6 +83,7 @@ export default class ServerHandler {
 				}
 			}
 
+			console.log("Ensuring channels");
 			for (const channel of channels) {
 				switch (channel.structure) {
 					case 0:
@@ -123,7 +131,9 @@ export default class ServerHandler {
 			for (const user of self.server.members.map((m: Discord.GuildMember) => m.user)) {
 				const record = await self.getUserRecord(user.id);
 				if (!record) continue;
-				const unbanTime = record.unbanDate instanceof Date ? record.unbanDate.getTime() : record.unbanDate;
+				console.log(record);
+				const unbanTime = (record.unbanDate instanceof Date) ? record.unbanDate.getTime() : record.unbanDate;
+				console.log("Unbanning at: " + unbanTime);
 				if (unbanTime === 0) continue;
 				if (unbanTime < now.getTime()) self.unbanUser(user);
 			}
@@ -189,9 +199,7 @@ export default class ServerHandler {
 		record.unbanDate = 0;
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
-		const role = member.roles.find((r: Discord.Role) => {
-			return r.name === "banned";
-		});
+		const role = member.roles.find((r: Discord.Role) => r.name === "banned");
 		if (role) member.removeRole(role);
 		this.updateUsers();
 	}
@@ -229,6 +237,7 @@ export default class ServerHandler {
 	}
 
 	async notify(msg: string): Promise<void> {
+		console.error(msg);
 		for (const channel of this.notificationChannels) {
 			channel.send(msg);
 		}

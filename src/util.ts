@@ -17,6 +17,7 @@ export const ensureDir = async (dirPath: string) => {
 
 export const ensureCategory = async (server: Discord.Guild, name: string): Promise<Discord.CategoryChannel> => {
 	let category = server.channels.find(c => c.name == name);
+	console.log(category);
 	if (category) {
 		if (!(category instanceof Discord.CategoryChannel)) throw new Error(`Channel ${name} exists but is not a category channel.`);
 		return category;
@@ -25,6 +26,7 @@ export const ensureCategory = async (server: Discord.Guild, name: string): Promi
 		type: "category",
 	});
 	if (!(category instanceof Discord.CategoryChannel)) throw new Error("This should never happen");
+	console.log(category);
 	return category;
 
 }
@@ -49,6 +51,7 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 	let permissionOverwrites = [];
 	const everyone = server.roles.find(r => r.name == "@everyone")
 	const muted = server.roles.find(r => r.name == "muted")
+	const banned = server.roles.find(r => r.name == "banned")
 	const admin = server.roles.find(r => r.name == "Admin")
 	if (!everyone) throw "\"@everyone\" role does not exist";
 	if (readOnly) permissionOverwrites.push({
@@ -59,11 +62,15 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 		id: admin,
 		allow: Discord.Permissions.FLAGS.VIEW_CHANNEL
 	});
+	permissionOverwrites.push({
+		id: banned,
+		deny: Discord.Permissions.FLAGS.VIEW_CHANNEL
+	});
+	permissionOverwrites.push({
+		id: muted,
+		deny: Discord.Permissions.FLAGS.SEND_MESSAGES
+	});
 	if (!roles.includes("*")) {
-		permissionOverwrites.push({
-			id: muted,
-			deny: Discord.Permissions.FLAGS.SEND_MESSAGES
-		});
 		permissionOverwrites.push({
 			id: everyone,
 			deny: Discord.Permissions.FLAGS.VIEW_CHANNEL
@@ -77,6 +84,7 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 			});
 		});
 	}
+	console.log(permissionOverwrites)
 	if (!channel) channel = await server.createChannel(name, {
 		type: "text",
 		permissionOverwrites,

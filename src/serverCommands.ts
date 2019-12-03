@@ -21,7 +21,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 	const args = message.content.slice(1).split(" ");
 	switch (args[0]) {
 		case "status":
-			const members = [];
+			let members = [];
 			for (const arg of args.slice(1)) {
 				for (const member of Array.from(message.guild.members.values())) {
 					if (arg === member.nickname || arg === member.user.username) {
@@ -29,6 +29,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 					}
 				}
 			}
+			members = members.filter((m, i, self) => self.indexOf(m) === i);
 			for (const member of members) {
 				await message.channel.send(await getStatus(member, handler));
 			}

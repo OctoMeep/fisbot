@@ -16,7 +16,6 @@ export default class DMHandler {
 	async handle (message: Discord.Message): Promise<void> {
 		if (message.guild) return;
 		if (message.author.bot) return;
-		console.log(message.content);
 
 		if (message.content.startsWith("!")) {
 			const command = message.content.substring(1);

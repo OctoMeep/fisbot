@@ -24,6 +24,7 @@ client.on("ready", async () => {
 	initialized = true;
 
 	for (const handler of serverHandlers) {
+		console.log("Setting up " + handler.server.id);
 		await handler.initialize();
 		await handler.updateUsers();
 		

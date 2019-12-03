@@ -52,7 +52,13 @@ Which server would you like to sign up for?
 		switch (this.state) {
 			case 0:
 				this.server = this.servers.find(s => s.name == response);
-				const courses = this.serverHandlers.find((h: ServerHandler) => h.server == this.server).courses;
+				const handler = this.serverHandlers.find((h: ServerHandler) => h.server == this.server)
+				if (handler.getUserRecord(this.user.id)) {
+					this.user.send("You have already signed up for this server!");
+					this.state = 5;
+					return;
+				}
+				const courses = handler.courses;
 				[1, 2, 3, 4, 5, 6].forEach(n => {
 					this.subjectGroups[n-1] = courses.filter(c => c.group == n);
 				});
