@@ -4,19 +4,19 @@ export default class UserRecord {
 	ib: boolean;
 	courses: string[];
 	strikes: number;
-	unbanDate: Date | number;
+	unmuteDate: Date | number;
 
-	constructor (id: string, ib: boolean, courses: string[], strikes: number, unbanDate: Date | number) {
+	constructor (id: string, ib: boolean, courses: string[], strikes: number, unmuteDate: Date | number) {
 		this.id = id;
 		this.ib = ib;
 		this.courses = courses;
 		this.strikes = strikes;
-		this.unbanDate = unbanDate;
+		this.unmuteDate = unmuteDate;
 	}
 
 	toString(): string {
-		const unbanTime = this.unbanDate instanceof Date ? this.unbanDate.getTime() : this.unbanDate;
-		return this.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.join(",") + "\t" + this.strikes + "\t" + unbanTime;
+		const unmuteTime = this.unmuteDate instanceof Date ? this.unmuteDate.getTime() : this.unmuteDate;
+		return this.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.join(",") + "\t" + this.strikes + "\t" + unmuteTime;
 	}
 
 	static fromString(line: string): UserRecord {

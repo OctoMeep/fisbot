@@ -58,9 +58,7 @@ export default class ServerHandler {
 
 			await util.ensureRole(this.server, "Admin", "YELLOW");
 			console.log("Ensured role Admin");
-			await util.ensureRole(this.server, "banned", "RED");
-			console.log("Ensured role banned");
-			await util.ensureRole(this.server, "muted", "orange");
+			await util.ensureRole(this.server, "muted", "ORANGE");
 			console.log("Ensured role muted");
 			await util.ensureRole(this.server, "signed-up", "AQUA");
 			console.log("Ensured role signed-up");
@@ -132,10 +130,10 @@ export default class ServerHandler {
 				const record = await self.getUserRecord(user.id);
 				if (!record) continue;
 				console.log(record);
-				const unbanTime = (record.unbanDate instanceof Date) ? record.unbanDate.getTime() : record.unbanDate;
-				console.log("Unbanning at: " + unbanTime);
-				if (unbanTime === 0) continue;
-				if (unbanTime < now.getTime()) self.unbanUser(user);
+				const unmuteTime = (record.unmuteDate instanceof Date) ? record.unmuteDate.getTime() : record.unmuteDate;
+				console.log("Unmuting at: " + unmuteTime);
+				if (unmuteTime === 0) continue;
+				if (unmuteTime < now.getTime()) self.unmuteUser(user);
 			}
 			self.updateUsers();
 			now = new Date();
@@ -164,7 +162,6 @@ export default class ServerHandler {
 		for (const userLine of userData.split("\n")) {
 			if (userLine.length == 0) continue;
 			const userRecord = UserRecord.fromString(userLine);
-			if (userRecord.unbanDate) continue;
 			const member = this.server.members.get(userRecord.id);
 			if (!member) return;
 			const roles = [];
@@ -186,21 +183,19 @@ export default class ServerHandler {
 		return UserRecord.fromString(userLine);
 	}
 
-	async banUser(user: Discord.User, unbanDate, reason?: string): Promise<void> {
+	async muteUser(user: Discord.User, unmuteDate, reason?: string): Promise<void> {
 		const record = await this.getUserRecord(user.id);
-		record.unbanDate = unbanDate.getTime();
+		record.unmuteDate = unmuteDate.getTime();
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
-		member.removeRoles(member.roles.filter((r: Discord.Role) => ["-sl", "-hl"].includes(r.name.slice(-3)) || ["ib", "signed-up"].includes(r.name)));
-		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "banned"), reason);
+		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "muted"), reason);
 	}
 
-	async unbanUser(user: Discord.User): Promise<void> {
+	async unmuteUser(user: Discord.User): Promise<void> {
 		const record = await this.getUserRecord(user.id);
-		record.unbanDate = 0;
-		await this.addUser(record);
+		record.unmuteDate = 0;
 		const member = await this.server.fetchMember(user);
-		const role = member.roles.find((r: Discord.Role) => r.name === "banned");
+		const role = member.roles.find((r: Discord.Role) => r.name === "muted");
 		if (role) member.removeRole(role);
 		this.updateUsers();
 	}
@@ -209,10 +204,10 @@ export default class ServerHandler {
 		const record = await this.getUserRecord(user.id);
 		record.strikes++;
 		if (record.strikes >= 3) {
-			const unbanDate = new Date();
-			unbanDate.setHours(unbanDate.getHours() + 24);
+			const unmuteDate = new Date();
+			unmuteDate.setHours(unmuteDate.getHours() + 24);
 			await this.addUser(record);
-			await this.banUser(user, unbanDate);
+			await this.muteUser(user, unmuteDate);
 		} else await this.addUser(record);
 
 	}
@@ -223,18 +218,6 @@ export default class ServerHandler {
 		else record.strikes--;
 		await this.addUser(record);
 		return true;
-	}
-
-	async muteUser(user: Discord.User, reason?: string): Promise<void> {
-		const member = await this.server.fetchMember(user);
-		const role = this.server.roles.find((r: Discord.Role) => r.name === "muted")
-		member.addRole(role, reason);
-	}
-
-	async unmuteUser(user: Discord.User, reason?: string): Promise<void> {
-		const member = await this.server.fetchMember(user);
-		const role = member.roles.find((r: Discord.Role) => r.name === "muted")
-		if (role) member.removeRole(role, reason);
 	}
 
 	async notify(msg: string): Promise<void> {

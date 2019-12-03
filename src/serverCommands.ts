@@ -5,13 +5,13 @@ const getStatus = async (member: Discord.GuildMember, handler: ServerHandler): P
 		const record = await handler.getUserRecord(member.id);
 		if (!record) return member.nickname || member.user.username + " has not signed up.";
 		else {
-			const unbanDate = record.unbanDate instanceof Date ? record.unbanDate : new Date(record.unbanDate);
+			const unmuteDate = record.unmuteDate instanceof Date ? record.unmuteDate : new Date(record.unmuteDate);
 			return `
 Status for ${member.nickname || member.user.username}:
 They have signed up for the following courses: ${record.courses.join(", ")}.
 They ${record.ib ? "" : "do not "}take the full IBDP.
 They have ${record.strikes} strikes.
-They are ${record.unbanDate === 0 ? `not banned` : `banned until ${unbanDate}`}.
+They are ${record.unmuteDate === 0 ? `not muted` : `muted until ${unmuteDate}`}.
 			`;
 		}
 }
@@ -34,13 +34,13 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				await message.channel.send(await getStatus(member, handler));
 			}
 			break;
-		case "ban":
+		case "mute":
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
 			if (args.length < 3) {
-				await message.channel.send("You must specify a time to ban for and a reason.");
+				await message.channel.send("You must specify a time to mute for and a reason.");
 				return;
 			}
 			const time = +args[1];
@@ -51,15 +51,25 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 
 			const reason = args[2];
 
-			const unbanDate = new Date();
-			unbanDate.setHours(unbanDate.getHours() + time);
+			const unmuteDate = new Date();
+			unmuteDate.setHours(unmuteDate.getHours() + time);
 
 			for (const member of Array.from(message.mentions.members.values())) {
 				const user = member.user;
 				if (await handler.getUserRecord(user.id)) {
-					await handler.banUser(user, unbanDate, reason);
-					await message.channel.send(`Banned ${member.nickname || user.username} until ${unbanDate}.`);
+					await handler.muteUser(user, unmuteDate, reason);
+					await message.channel.send(`Muted ${member.nickname || user.username} until ${unmuteDate}.`);
 				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
+			}
+			break;
+		case "unmute":
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+				await message.channel.send("Only admins can use this command.");
+				return;
+			}
+			for (const member of Array.from(message.mentions.members.values())) {
+				await handler.unmuteUser(member.user);
+				await message.channel.send(`Unmuted ${member.nickname || member.user.username}`);
 			}
 			break;
 		case "strike":
@@ -87,35 +97,6 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 					if (result) await message.channel.send(`Removed 1 strike for ${member.nickname || user.username}.`);
 					if (!result) await message.channel.send(`${member.nickname || user.username} has no strikes.`);
 				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
-			}
-			break;
-		case "mute":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
-				await message.channel.send("Only admins can use this command.");
-				return;
-			}
-			for (const member of Array.from(message.mentions.members.values())) {
-				await handler.muteUser(member.user);
-				await message.channel.send(`Muted ${member.nickname || member.user.username}`);
-			}
-			break;
-		case "unmute":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
-				await message.channel.send("Only admins can use this command.");
-				return;
-			}
-			for (const member of Array.from(message.mentions.members.values())) {
-				await handler.unmuteUser(member.user);
-				await message.channel.send(`Unmuted ${member.nickname || member.user.username}`);
-			}
-			break;
-		case "fixAdmin":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
-				await message.channel.send("Only admins can use this command.");
-				return;
-			}
-			for (const channel of Array.from(message.guild.channels.values())) {
-				channel.overwritePermissions(message.guild.roles.find((r: Discord.Role) => r.name == "Admin"), {"VIEW_CHANNEL": true})
 			}
 			break;
 		case "init":
