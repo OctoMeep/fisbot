@@ -60,6 +60,12 @@ New content: ${newMessage.content}
 });
 
 process.on("unhandledRejection", (err, promise) => {
-		// This should only happen because a .send failed -> connection issue
-		console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
+	console.error("Unhandled promise rejection at " + promise + ", reason:\n" + (err instanceof Error ? err.stack : err));
+	try {
+		for (const handler of serverHandlers) {
+			handler.notify("An error occured, please notify an administrator:\n" + (err instanceof Error ? err.stack : err))
+		}
+	} catch (err) {
+		console.error("Sending error message failed.");
+	}
 });

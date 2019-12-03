@@ -185,6 +185,7 @@ export default class ServerHandler {
 
 	async muteUser(user: Discord.User, unmuteDate, reason?: string): Promise<void> {
 		const record = await this.getUserRecord(user.id);
+		if (!record) return;
 		record.unmuteDate = unmuteDate.getTime();
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
@@ -193,6 +194,7 @@ export default class ServerHandler {
 
 	async unmuteUser(user: Discord.User): Promise<void> {
 		const record = await this.getUserRecord(user.id);
+		if (!record) return;
 		record.unmuteDate = 0;
 		const member = await this.server.fetchMember(user);
 		const role = member.roles.find((r: Discord.Role) => r.name === "muted");
@@ -202,6 +204,7 @@ export default class ServerHandler {
 
 	async strikeUser(user: Discord.User): Promise<void> {
 		const record = await this.getUserRecord(user.id);
+		if (!record) return;
 		record.strikes++;
 		if (record.strikes >= 3) {
 			const unmuteDate = new Date();
@@ -214,6 +217,7 @@ export default class ServerHandler {
 
 	async unstrikeUser(user: Discord.User): Promise<boolean> {
 		const record = await this.getUserRecord(user.id);
+		if (!record) return;
 		if (record.strikes === 0) return false;
 		else record.strikes--;
 		await this.addUser(record);
