@@ -166,6 +166,7 @@ export default class ServerHandler {
 			const userRecord = UserRecord.fromString(userLine);
 			if (userRecord.unbanDate) continue;
 			const member = this.server.members.get(userRecord.id);
+			if (!member) return;
 			const roles = [];
 			for (const roleString of userRecord.courses) {
 				if (roleString.length > 0) roles.push(this.server.roles.find(r => r.name == roleString));
