@@ -49,7 +49,7 @@ Content: ${message.content}
 });
 
 client.on("messageUpdate", async (oldMessage: Discord.Message, newMessage: Discord.Message) => {
-	if (oldMessage.guild) await oldMessage.guild.owner.user.send(`
+	if (oldMessage.guild && oldMessage.content != newMessage.content) await oldMessage.guild.owner.user.send(`
 Message edited in ${(oldMessage.channel as Discord.TextChannel).name} in ${oldMessage.guild.name} at ${new Date()}
 Send time: ${oldMessage.createdAt}
 Author: ${oldMessage.author}
