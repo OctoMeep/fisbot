@@ -53,7 +53,7 @@ Which server would you like to sign up for?
 			case 0:
 				this.server = this.servers.find(s => s.name == response);
 				const handler = this.serverHandlers.find((h: ServerHandler) => h.server == this.server)
-				if (handler.getUserRecord(this.user.id)) {
+				if (await handler.getUserRecord(this.user.id)) {
 					this.user.send("You have already signed up for this server!");
 					this.state = 5;
 					return;
