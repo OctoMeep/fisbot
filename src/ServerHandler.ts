@@ -129,7 +129,6 @@ export default class ServerHandler {
 			for (const user of self.server.members.map((m: Discord.GuildMember) => m.user)) {
 				const record = await self.getUserRecord(user.id);
 				if (!record) continue;
-				console.log(record);
 				const unmuteTime = (record.unmuteDate instanceof Date) ? record.unmuteDate.getTime() : record.unmuteDate;
 				console.log("Unmuting at: " + unmuteTime);
 				if (unmuteTime === 0) continue;
@@ -171,7 +170,7 @@ export default class ServerHandler {
 			if (userRecord.ib) roles.push(this.server.roles.find(r => r.name == "ib"));
 			roles.push(this.server.roles.find(r => r.name == "signed-up"));
 			for (const role of roles) {
-				if (!member.roles.has(role.id)) member.addRole(role);
+				if (!member.roles.has(role.id)) await member.addRole(role);
 			}
 		}
 	}
