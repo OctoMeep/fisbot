@@ -195,6 +195,7 @@ export default class ServerHandler {
 		const record = await this.getUserRecord(user.id);
 		if (!record) return;
 		record.unmuteDate = 0;
+		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
 		const role = member.roles.find((r: Discord.Role) => r.name === "muted");
 		if (role) member.removeRole(role);
