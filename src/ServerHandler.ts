@@ -182,7 +182,7 @@ export default class ServerHandler {
 		return UserRecord.fromString(userLine);
 	}
 
-	async muteUser(user: Discord.User, unmuteDate, reason?: string): Promise<void> {
+	async muteUser(user: Discord.User, unmuteDate: Date, reason?: string): Promise<void> {
 		const record = await this.getUserRecord(user.id);
 		if (!record) return;
 		record.unmuteDate = unmuteDate.getTime();

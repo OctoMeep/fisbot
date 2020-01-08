@@ -16,6 +16,12 @@ They are ${record.unmuteDate === 0 ? `not muted` : `muted until ${unmuteDate}`}.
 		}
 }
 
+const unformatName = (name: string) => name.toLowerCase().replace(/ /g,'');
+
+const matchesName = (name: string, member: Discord.GuildMember): boolean => {
+	return unformatName(name) === unformatName(member.nickname) || unformatName(name) === unformatName(member.user.username)
+}
+
 export const handleMessage = async (message: Discord.Message, handler: ServerHandler): Promise<void> => {
 	if (!message.content.startsWith("!")) return;
 	const args = message.content.slice(1).split(" ");
@@ -24,7 +30,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			let members = [];
 			for (const arg of args.slice(1)) {
 				for (const member of Array.from(message.guild.members.values())) {
-					if (arg === member.nickname || arg === member.user.username) {
+					if (matchesName(arg, member)) {
 						members.push(member);
 					}
 				}
