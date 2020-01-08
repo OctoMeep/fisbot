@@ -19,7 +19,7 @@ They are ${record.unmuteDate === 0 ? `not muted` : `muted until ${unmuteDate}`}.
 const unformatName = (name: string) => name.toLowerCase().replace(/ /g,'');
 
 const matchesName = (name: string, member: Discord.GuildMember): boolean => {
-	return unformatName(name) === unformatName(member.nickname) || unformatName(name) === unformatName(member.user.username)
+	return unformatName(name) === unformatName(member.user.username) || member.nickname !== null && unformatName(name) === unformatName(member.nickname);
 }
 
 export const handleMessage = async (message: Discord.Message, handler: ServerHandler): Promise<void> => {
