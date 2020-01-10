@@ -23,7 +23,8 @@ const matchesName = (name: string, member: Discord.GuildMember): boolean => {
 }
 
 export const handleMessage = async (message: Discord.Message, handler: ServerHandler): Promise<void> => {
-	if (!message.content.startsWith("!")) return;
+	if (!message.content.startsWith("!"))
+	 return;
 	const args = message.content.slice(1).split(" ");
 	switch (args[0]) {
 		case "status":
@@ -41,7 +42,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			}
 			break;
 		case "mute":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin") && !message.member.roles.find((r: Discord.Role) => r.name == "Akhat")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
@@ -49,11 +50,13 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				await message.channel.send("You must specify a time to mute for and a reason.");
 				return;
 			}
+			
 			const time = +args[1];
 			if (!time) {
 				await message.channel.send("Invalid time.");
 				return;
 			}
+			
 
 			const reason = args[2];
 
@@ -79,10 +82,11 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			}
 			break;
 		case "strike":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin") && !message.member.roles.find((r: Discord.Role) => r.name == "Akhat")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
+			
 			for (const member of Array.from(message.mentions.members.values())) {
 				const user = member.user;
 				if (await handler.getUserRecord(user.id)) {
