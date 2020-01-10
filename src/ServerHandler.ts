@@ -31,8 +31,7 @@ export default class ServerHandler {
 		if (message.author.bot) return;
 		if (!this.initialized) await this.initialize(false, message);
 		if (!this.active) return;
-		if(message.content === "Akhat above all" || message.content === akhat.toString()){
-			
+		if(akhat != null && message.content === "Akhat above all" || message.content === akhat.toString()){
 			await message.channel.send(`${akhat} I only support the Akhat, everyone else is inferior.`);
 			return;
 		}
