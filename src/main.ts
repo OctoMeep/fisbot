@@ -33,7 +33,7 @@ client.on("ready", async () => {
 
 client.on("message", (message: Discord.Message) => {
 	if (message.guild) serverHandlers.forEach((serverHandler: ServerHandler) => {
-		if (message.guild == serverHandler.server) serverHandler.handleMessage(message); 
+		if (message.guild == serverHandler.server) serverHandler.handleMessage(message,client); 
 	});
 	else dm.handle(message);
 });

@@ -25,12 +25,18 @@ export default class ServerHandler {
 		this.notificationChannels = [];
 	}
 
-	async handleMessage (message: Discord.Message): Promise<void> {
+	async handleMessage (message: Discord.Message, client: Discord.Client): Promise<void> {
+		const akhat = client.emojis.find(emoji => emoji.name === "Akhat");
 		if (!(message.channel instanceof Discord.TextChannel)) return;
 		if (message.author.bot) return;
 		if (!this.initialized) await this.initialize(false, message);
 		if (!this.active) return;
-
+		if(message.content === "Akhat above all" || message.content === akhat.toString()){
+			
+			await message.channel.send(`${akhat} I only support the Akhat, everyone else is inferior.`);
+			return;
+		}
+		
 		if (message.content.startsWith("!")) serverCommands.handleMessage(message, this);
 	}
 
@@ -172,6 +178,7 @@ export default class ServerHandler {
 			for (const role of roles) {
 				if (!member.roles.has(role.id)) await member.addRole(role);
 			}
+			
 		}
 	}
 
@@ -198,6 +205,7 @@ export default class ServerHandler {
 		await this.addUser(record);
 		const member = await this.server.fetchMember(user);
 		const role = member.roles.find((r: Discord.Role) => r.name === "muted");
+		
 		if (role) member.removeRole(role);
 		this.updateUsers();
 	}
@@ -214,6 +222,10 @@ export default class ServerHandler {
 		} else await this.addUser(record);
 
 	}
+
+	
+
+	
 
 	async unstrikeUser(user: Discord.User): Promise<boolean> {
 		const record = await this.getUserRecord(user.id);
