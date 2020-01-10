@@ -42,7 +42,7 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			}
 			break;
 		case "mute":
-			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin"))) {
+			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
