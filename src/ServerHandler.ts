@@ -36,9 +36,7 @@ export default class ServerHandler {
 			await message.channel.send(`${akhat} I only support the Akhat, everyone else is inferior.`);
 			return;
 		}
-		if(message.content === "comrades")
-		await message.channel.send("Comrades are gay");
-
+		
 		if (message.content.startsWith("!")) serverCommands.handleMessage(message, this);
 	}
 
