@@ -31,15 +31,23 @@ export const ensureCategory = async (server: Discord.Guild, name: string): Promi
 
 }
 
-export const ensureRole = async (server: Discord.Guild, name: string, color?: string | number | [number, number, number]): Promise<Discord.Role> => {
+export const ensureRole = async (server: Discord.Guild, name: string, color?: string | number, reset?: boolean): Promise<Discord.Role> => {
 	let role = server.roles.find(r => r.name == name);
-	if (role) return role;
-	else return await server.createRole({
-		name,
-		mentionable: true,
-		color,
-		permissions: 0 //37084224
-	});
+	if (!role) {
+			role = await server.createRole({
+			name,
+			mentionable: true,
+			color,
+			permissions: 0 //37084224
+		});
+	} else if (reset) {
+		await Promise.all([
+			role.setMentionable(true),
+			role.setColor(color),
+			role.setPermissions(0)
+		]);
+	}
+	return role;
 }
 
 export const ensureChannel = async (server: Discord.Guild, name: string, category: Discord.CategoryChannel, roles: string[], readOnly: boolean, reset?: boolean): Promise<Discord.TextChannel> => {
@@ -48,7 +56,7 @@ export const ensureChannel = async (server: Discord.Guild, name: string, categor
 		if (!(channel instanceof Discord.TextChannel)) throw `Channel ${name} exists but is not a text channel.`;
 		if (!reset) return channel;
 	}
-	let permissionOverwrites = [];
+	const permissionOverwrites = [];
 	const everyone = server.roles.find(r => r.name == "@everyone")
 	const muted = server.roles.find(r => r.name == "muted")
 	const admin = server.roles.find(r => r.name == "Admin")
