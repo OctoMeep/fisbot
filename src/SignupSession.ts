@@ -23,10 +23,10 @@ export default class SignupSession {
 		this.client = client;
 		this.user = user;
 		this.state = 0;
-		let guilds = Array.from(client.guilds.values());
+		const guilds = Array.from(client.guilds.values());
 		this.serverHandlers = serverHandlers;
 		this.servers = guilds.filter(s => {
-			let handler = serverHandlers.find(h => h.server == s);
+			const handler = serverHandlers.find(h => h.server == s);
 			return handler && handler.initialized && handler.active && this.user.client.guilds.has(s.id);
 		});
 		if (this.servers.length == 0) {
@@ -45,15 +45,20 @@ Which server would you like to sign up for?
 		this.currentPrompt.ask();
 	}
 
-	async process (message: Discord.Message) {
+	async process (message: Discord.Message): Promise<void> {
 		if (message.author != this.user) return;
 		if (!this.currentPrompt) return;
 		const response: string = await this.currentPrompt.respond(message);
 		switch (this.state) {
-			case 0:
+			case 0: {
 				this.server = this.servers.find(s => s.name == response);
 				const handler = this.serverHandlers.find((h: ServerHandler) => h.server == this.server)
-				if (await handler.getUserRecord(this.user.id)) {
+				const member = this.server.member(this.user);
+				if (!member) {
+					this.user.send("You are not a member of this server!");
+					this.state = 5;
+					return;
+				} else if (await handler.getUserRecord(member)) {
 					this.user.send("You have already signed up for this server!");
 					this.state = 5;
 					return;
@@ -67,13 +72,15 @@ Which server would you like to sign up for?
 				this.currentPrompt = new Prompt(this.user, "Are you taking the full IB?", ["Yes", "No"]);
 				this.state = 1;
 				break;
-			case 1:
+			}
+			case 1: {
 				this.ib = response == "Yes";
 				this.group = 1;
 				this.promptSubject();
 				break;
-			case 2:
-				let course = this.subjectGroups[this.group - 1].find(c => c.name == response);
+			}
+			case 2: {
+				const course = this.subjectGroups[this.group - 1].find(c => c.name == response);
 				if (course) this.courses.push({course, hl: false});
 
 				if (!course || this.courses[this.courses.length-1].course.structure == 3) { // "Skip" or no hl
@@ -82,12 +89,14 @@ Which server would you like to sign up for?
 				}
 				this.promptHL();
 				break;
-			case 3:
+			}
+			case 3: {
 				this.courses[this.courses.length-1].hl = response == "Yes";
 				this.nextGroup();
 
 				break;
-			case 4:
+			}
+			case 4: {
 				this.extra = true;
 				let no = true;
 				[1, 2, 3, 4, 5, 6].forEach(n => {
@@ -103,19 +112,21 @@ Which server would you like to sign up for?
 					this.promptSubject();
 				}
 				break;
-			default:
+			}
+			default: {
 				return;
+			}
 		}
 		await this.currentPrompt.ask();
 	}
 
-	promptSubject () {
-		let options = [...this.subjectGroups[this.group-1].map(c => c.name), "I don't take any of these"];
+	promptSubject(): void {
+		const options = [...this.subjectGroups[this.group-1].map(c => c.name), "I don't take any of these"];
 		this.currentPrompt = new Prompt(this.user, `Which group ${this.group} subject do you take?`, options);
 		this.state = 2;
 	}
 
-	promptExtra () {
+	promptExtra(): void {
 		this.currentPrompt = new Prompt(this.user, "Do you take another subject?", [
 			"I take another group 1 subject",
 			"I take another group 2 subject",
@@ -128,12 +139,12 @@ Which server would you like to sign up for?
 		this.state = 4;
 	}
 
-	promptHL () {
+	promptHL(): void {
 		this.currentPrompt = new Prompt(this.user, "Do you take this course at the higher level?", ["Yes", "No"]);
 		this.state = 3;
 	}
 
-	nextGroup () {
+	nextGroup(): void {
 		if (this.extra) {
 			this.promptExtra();
 		} else {
@@ -147,7 +158,7 @@ Which server would you like to sign up for?
 		}
 	}
 
-	async done () {
+	async done(): Promise<void> {
 		// console.log(this.courses);
 		// let output = this.user.id + "\t" + (this.ib ? "y" : "n") + "\t" + this.courses.map(c => {
 		// 	return c.course.name + (c.hl ? "-hl" : "-sl");
@@ -156,11 +167,12 @@ Which server would you like to sign up for?
 		// this.state = 5;
 
 		await this.user.send("Processing signup request...");
-		let handler = this.serverHandlers.find(h => h.server == this.server);
-		await handler.addUser(new UserRecord(this.user.id, this.ib, this.courses.map(c => {
+		const handler = this.serverHandlers.find(h => h.server == this.server);
+		const record = new UserRecord(this.user.id, this.ib, this.courses.map(c => {
 			return c.course.name + (c.hl ? "-hl" : "-sl");
-		}), 0, 0));
-		await handler.updateUsers();
+		}), 0, 0);
+		await handler.updateRecord(record);
+		await handler.updateMember(record);
 		await this.user.send("Thank you for signing up!");
 		this.state = 5;
 	}

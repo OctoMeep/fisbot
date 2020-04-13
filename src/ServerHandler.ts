@@ -1,7 +1,7 @@
+import { version } from "./package.json";
 import * as Discord from "discord.js";
 import { promises as fsp } from "fs";
 import * as config from "./config.json";
-import * as init from "./init";
 import * as util from "./util";
 import ChannelSetting from "./ChannelSetting";
 import * as serverCommands from "./serverCommands";
@@ -50,10 +50,9 @@ export default class ServerHandler {
 		try {
 			await util.ensureDir(config.savePath);
 			await util.ensureDir(dirPath);
-			categories = await init.getCategories(this.server);
-			channels = await init.getChannels(this.server);
+			categories = await util.getCategories(this.server);
+			channels = await util.getChannels(this.server);
 			console.log("Ensuring categories");
-			console.log(categories);
 			for (const category of categories) {
 				console.log("Ensuring " + category);
 				const categoryChannel = await util.ensureCategory(this.server, category);
@@ -73,53 +72,60 @@ export default class ServerHandler {
 			console.log("Ensuring roles");
 			for (const channel of channels) {
 				switch (channel.structure) {
-					case 3:
+					case 3: {
 						await util.ensureRole(this.server, channel.name + "-sl", "PURPLE");
 						console.log(`Ensured role ${channel.name}`);
 						break;
+					}
 					case 4:
-					case 5:
+					case 5: {
 						await util.ensureRole(this.server, channel.name + "-sl", "BLUE");
 						console.log(`Ensured role ${channel.name + "-sl"}`);
 						await util.ensureRole(this.server, channel.name + "-hl", "GREEN");
-						console.log(`Ensured role ${channel.name + "-hl"}`);
+						console.log(`Ensured role ${channel.name + "-hl"}`);	
+					}
 				}
 			}
 
 			console.log("Ensuring channels");
 			for (const channel of channels) {
 				switch (channel.structure) {
-					case 0:
+					case 0: {
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						break;
-					case 1:
+					}
+					case 1: {
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						break;
-					case 2:
+					}
+					case 2: {
 						const notificationChannel = await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], channel.roles, true, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.notificationChannels.push(notificationChannel);
 						break;
-					case 3:
+					}
+					case 3: {
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl"], false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
-					case 4:
+					}
+					case 4: {
 						await util.ensureChannel(this.server, channel.name, categoryChannels[channel.category], [channel.name + "-sl", channel.name + "-hl"], false, reset);
 						console.log(`Ensured channel ${channel.name}`);
 						this.courses.push(channel);
 						break;
-					case 5:
+					}
+					case 5: {
 						await util.ensureChannel(this.server, channel.name + "-sl", categoryChannels[channel.category], [channel.name + "-sl"], false, reset);
 						console.log(`Ensured channel ${channel.name + "-sl"}`);
 						await util.ensureChannel(this.server, channel.name + "-hl", categoryChannels[channel.category], [channel.name + "-hl"], false, reset);
 						console.log(`Ensured channel ${channel.name + "-hl"}`);
 						this.courses.push(channel);
 						break;
-
+					}
 				}
 			}
 		} catch (err) {
@@ -129,31 +135,22 @@ export default class ServerHandler {
 		this.initialized = true;
 		this.active = true;
 
-		(async function loop(self: ServerHandler): Promise<void> {
-			let now = new Date();
-			for (const user of self.server.members.map((m: Discord.GuildMember) => m.user)) {
-				const record = await self.getUserRecord(user.id);
-				if (!record) continue;
-				const unmuteTime = (record.unmuteDate instanceof Date) ? record.unmuteDate.getTime() : record.unmuteDate;
-				console.log("Unmuting at: " + unmuteTime);
-				if (unmuteTime === 0) continue;
-				if (unmuteTime < now.getTime()) self.unmuteUser(user);
-			}
-			self.updateUsers();
-			now = new Date();
-			setTimeout(() => {loop(self)}, 60000 - (now.getTime() % 60000));
-		})(this);
+		// (async function loop(self: ServerHandler): Promise<void> {
+		// 	await self.updateMembers();
+		// 	setTimeout(() => {loop(self)}, 60000);
+		// })(this);
 
-		this.notify("Setup complete, the bot is now operational.");
+		this.notify(`Setup complete, the bot is now operational. Running fisbot version ${version}`);
 	}
 
-	async addUser(record: UserRecord): Promise<void> {
-		console.log(record);
-		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
+	async updateRecord(record: UserRecord): Promise<void> {
+		console.trace(`Why is this running?`);
+		const userData = await util.readFileIfExists(config.savePath + this.server.id + "/users");
 		const lines = userData.split("\n");
 		for (let i = 0; i < lines.length; i++) {
 			if (lines[i].startsWith(record.id)) {
 				lines[i] = record.toString();
+				console.log(`Saving ${lines.join("\n")} to ${config.savePath + this.server.id + "/users"}`);
 				await fsp.writeFile(config.savePath + this.server.id + "/users", lines.join("\n"));
 				return;
 			}		
@@ -161,77 +158,73 @@ export default class ServerHandler {
 		await fsp.appendFile(config.savePath + this.server.id + "/users", "\n" + record.toString())
 	}
 
-	async updateUsers(): Promise<void> {
-		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
+	async updateMember(record: UserRecord): Promise<void> {
+		const member = this.server.members.get(record.id);
+		const roles = [];
+		for (const roleString of record.courses) {
+			if (roleString.length > 0) roles.push(this.server.roles.find(r => r.name == roleString));
+		}
+		if (record.ib) roles.push(this.server.roles.find(r => r.name == "ib"));
+		roles.push(this.server.roles.find(r => r.name == "signed-up"));
+		for (const role of roles) {
+			if (!member.roles.has(role.id)) await member.addRole(role);
+		}
+		const unmuteTime = (record.unmuteDate instanceof Date) ? record.unmuteDate.getTime() : record.unmuteDate;
+		// console.log("Unmuting at: " + unmuteTime);
+		const muted = this.server.roles.find((r: Discord.Role) => r.name === "muted");
+		if (unmuteTime == 0) {
+			if (member.roles.has(muted.id)) member.removeRole(muted);
+		} else if (unmuteTime < new Date().getTime()) this.unmuteMember(record);
+		else if (!member.roles.has(muted.id)) member.addRole(muted);
+	}
+
+	async updateMembers(): Promise<void> {
+		const userData = await util.readFileIfExists(config.savePath + this.server.id + "/users");
 		for (const userLine of userData.split("\n")) {
 			if (userLine.length == 0) continue;
-			const userRecord = UserRecord.fromString(userLine);
-			const member = this.server.members.get(userRecord.id);
+			const record = UserRecord.fromString(userLine);
+			const member = this.server.members.get(record.id);
 			if (!member) return;
-			const roles = [];
-			for (const roleString of userRecord.courses) {
-				if (roleString.length > 0) roles.push(this.server.roles.find(r => r.name == roleString));
-			}
-			if (userRecord.ib) roles.push(this.server.roles.find(r => r.name == "ib"));
-			roles.push(this.server.roles.find(r => r.name == "signed-up"));
-			for (const role of roles) {
-				if (!member.roles.has(role.id)) await member.addRole(role);
-			}
-			
+			await this.updateMember(record)
 		}
 	}
 
-	async getUserRecord(id: string): Promise<UserRecord> {
-		const userData = await init.readFileIfExists(config.savePath + this.server.id + "/users");
-		const userLine = await userData.split("\n").find((s: string) => s.startsWith(id));
+	async getUserRecord(member: Discord.GuildMember): Promise<UserRecord> {
+		const userData = await util.readFileIfExists(config.savePath + this.server.id + "/users");
+		const userLine = await userData.split("\n").find((s: string) => s.startsWith(member.user.id));
 		if (!userLine) return null;
 		return UserRecord.fromString(userLine);
 	}
 
-	async muteUser(user: Discord.User, unmuteDate: Date, reason?: string): Promise<void> {
-		const record = await this.getUserRecord(user.id);
-		if (!record) return;
+	async muteMember(record: UserRecord, unmuteDate: Date): Promise<void> {
 		record.unmuteDate = unmuteDate.getTime();
-		await this.addUser(record);
-		const member = await this.server.fetchMember(user);
-		member.addRole(this.server.roles.find((r: Discord.Role) => r.name === "muted"), reason);
+		await this.updateRecord(record);
+		await this.updateMember(record);
 	}
 
-	async unmuteUser(user: Discord.User): Promise<void> {
-		const record = await this.getUserRecord(user.id);
+	async unmuteMember(record: UserRecord): Promise<void> {
 		if (!record) return;
 		record.unmuteDate = 0;
-		await this.addUser(record);
-		const member = await this.server.fetchMember(user);
-		const role = member.roles.find((r: Discord.Role) => r.name === "muted");
-		
-		if (role) member.removeRole(role);
-		this.updateUsers();
+		await this.updateRecord(record);
+		this.updateMember(record);
 	}
 
-	async strikeUser(user: Discord.User): Promise<void> {
-		const record = await this.getUserRecord(user.id);
+	async strikeMember(record: UserRecord): Promise<void> {
 		if (!record) return;
 		record.strikes++;
 		if (record.strikes >= 3) {
 			const unmuteDate = new Date();
 			unmuteDate.setHours(unmuteDate.getHours() + 24);
-			await this.addUser(record);
-			await this.muteUser(user, unmuteDate);
-		} else await this.addUser(record);
-
+			await this.updateRecord(record);
+			await this.muteMember(record, unmuteDate);
+		} else await this.updateRecord(record);
 	}
 
-	
-
-	
-
-	async unstrikeUser(user: Discord.User): Promise<boolean> {
-		const record = await this.getUserRecord(user.id);
+	async unstrikeMember(record: UserRecord): Promise<boolean> {
 		if (!record) return;
 		if (record.strikes === 0) return false;
 		else record.strikes--;
-		await this.addUser(record);
+		await this.updateRecord(record);
 		return true;
 	}
 

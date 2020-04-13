@@ -1,5 +1,7 @@
 import * as Discord from "discord.js";
 import * as config from "./config.json";
+import { promises as fsp } from "fs";
+import * as path from "path"
 import ServerHandler from "./ServerHandler"
 import DMHandler from "./DMHandler"
 
@@ -13,20 +15,29 @@ client.login(config.token);
 
 client.on("ready", async () => {
 	if (initialized) return;
-	console.log("Ready!");
-	client.guilds.forEach((server: Discord.Guild) => {
-		serverHandlers.push(new ServerHandler(client, server));
-	});
+	console.log(`Beginning setup. Save directory is ${config.savePath}`);
+	for (const server of Array.from(client.guilds.values())) {
+		const dirPath = path.resolve(config.savePath + server.id);
+		try {
+			const dirStats = await fsp.stat(dirPath);
+			if (!dirStats.isDirectory()) {
+				console.log(`${dirPath} exists but is not a directory; skipping this server.`);
+			} else {
+				console.log(`Detected server ${server.id}.`);
+				serverHandlers.push(new ServerHandler(client, server));
+			}		
+		} catch (err) {
+			console.log(`Ignoring unconfigured server ${server.id}. If you want to use this server, create the folder ${dirPath}`);
+		}
+	}
 	dm = new DMHandler(client, serverHandlers);
-
-	
 
 	initialized = true;
 
 	for (const handler of serverHandlers) {
 		console.log("Setting up " + handler.server.id);
 		await handler.initialize();
-		await handler.updateUsers();
+		await handler.updateMembers();
 		
 	}
 });
@@ -64,6 +75,18 @@ process.on("unhandledRejection", (err, promise) => {
 	try {
 		for (const handler of serverHandlers) {
 			handler.notify("An error occured, please notify an administrator:\n" + (err instanceof Error ? err.stack : err))
+		}
+	} catch (err) {
+		console.error("Sending error message failed.");
+	}
+});
+
+process.on("uncaughtException", err => {
+	console.error("Uncaught exception:\n" + err.stack);
+	console.error("Error message:\n" + err.message);
+	try {
+		for (const handler of serverHandlers) {
+			handler.notify("An error occured, please notify an administrator:\n" + err.stack)
 		}
 	} catch (err) {
 		console.error("Sending error message failed.");

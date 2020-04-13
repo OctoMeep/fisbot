@@ -2,7 +2,7 @@ import * as Discord from "discord.js";
 import ServerHandler from "./ServerHandler";
 
 const getStatus = async (member: Discord.GuildMember, handler: ServerHandler): Promise<string> => {
-		const record = await handler.getUserRecord(member.id);
+		const record = await handler.getUserRecord(member);
 		if (!record) return member.nickname || member.user.username + " has not signed up.";
 		else {
 			const unmuteDate = record.unmuteDate instanceof Date ? record.unmuteDate : new Date(record.unmuteDate);
@@ -16,22 +16,25 @@ They are ${record.unmuteDate === 0 ? `not muted` : `muted until ${unmuteDate}`}.
 		}
 }
 
-const unformatName = (name: string) => name.toLowerCase().replace(/ /g,'');
+const unformatName = (name: string): string => name.toLowerCase().replace(/ /g,'');
 
 const matchesName = (name: string, member: Discord.GuildMember): boolean => {
-	return unformatName(name) === unformatName(member.user.username) || member.nickname !== null && unformatName(name) === unformatName(member.nickname);
+	const usernameMatches = (unformatName(name) === unformatName(member.user.username));
+	const nicknameMatches = (member.nickname !== null && unformatName(name) === unformatName(member.nickname));
+	console.log(usernameMatches, nicknameMatches)
+	return usernameMatches || nicknameMatches;
 }
 
 export const handleMessage = async (message: Discord.Message, handler: ServerHandler): Promise<void> => {
-	if (!message.content.startsWith("!"))
-	 return;
+	if (!message.content.startsWith("!")) return;
 	const args = message.content.slice(1).split(" ");
 	switch (args[0]) {
-		case "status":
+		case "status": {
 			let members = [];
 			for (const arg of args.slice(1)) {
 				for (const member of Array.from(message.guild.members.values())) {
 					if (matchesName(arg, member)) {
+						console.log(`Found member ${member.user.username}`);
 						members.push(member);
 					}
 				}
@@ -41,7 +44,8 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 				await message.channel.send(await getStatus(member, handler));
 			}
 			break;
-		case "mute":
+		}
+		case "mute": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
@@ -64,52 +68,56 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			unmuteDate.setHours(unmuteDate.getHours() + time);
 
 			for (const member of Array.from(message.mentions.members.values())) {
-				const user = member.user;
-				if (await handler.getUserRecord(user.id)) {
-					await handler.muteUser(user, unmuteDate, reason);
-					await message.channel.send(`Muted ${member.nickname || user.username} until ${unmuteDate}.`);
-				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
+				const record = await handler.getUserRecord(member);
+				if (record) {
+					await handler.muteMember(record, unmuteDate);
+					await message.channel.send(`Muted ${member.nickname || member.user.username} until ${unmuteDate}.`);
+				} else await message.channel.send(`${member.nickname || member.user.username} has not signed up yet.`);
 			}
 			break;
-		case "unmute":
+		}
+		case "unmute": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
 			for (const member of Array.from(message.mentions.members.values())) {
-				await handler.unmuteUser(member.user);
+				await handler.unmuteMember(await handler.getUserRecord(member));
 				await message.channel.send(`Unmuted ${member.nickname || member.user.username}`);
 			}
 			break;
-		case "strike":
+		}
+		case "strike": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
 			
 			for (const member of Array.from(message.mentions.members.values())) {
-				const user = member.user;
-				if (await handler.getUserRecord(user.id)) {
-					await handler.strikeUser(user);
-					await message.channel.send(`Added 1 strike for ${member.nickname || user.username}.`);
-				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
+				const record = await handler.getUserRecord(member)
+				if (record) {
+					await handler.strikeMember(record);
+					await message.channel.send(`Added 1 strike for ${member.nickname || member.user.username}.`);
+				} else await message.channel.send(`${member.nickname || member.user.username} has not signed up yet.`);
 			}
 			break;
-		case "unstrike":
+		}
+		case "unstrike": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
 			}
 			for (const member of Array.from(message.mentions.members.values())) {
-				const user = member.user;
-				if (await handler.getUserRecord(user.id)) {
-					const result = await handler.unstrikeUser(user);
-					if (result) await message.channel.send(`Removed 1 strike for ${member.nickname || user.username}.`);
-					if (!result) await message.channel.send(`${member.nickname || user.username} has no strikes.`);
-				} else await message.channel.send(`${member.nickname || user.username} has not signed up yet.`);
+				const record = await handler.getUserRecord(member);
+				if (record) {
+					const result = await handler.unstrikeMember(record);
+					if (result) await message.channel.send(`Removed 1 strike for ${member.nickname || member.user.username}.`);
+					if (!result) await message.channel.send(`${member.nickname || member.user.username} has no strikes.`);
+				} else await message.channel.send(`${member.nickname || member.user.username} has not signed up yet.`);
 			}
 			break;
-		case "init":
+		}
+		case "init": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
@@ -117,7 +125,8 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			await message.channel.send("Rerunning initialization for this server");
 			handler.initialize();
 			break;
-		case "init-reset":
+		}
+		case "init-reset": {
 			if (!message.member.roles.find((r: Discord.Role) => r.name == "Admin")) {
 				await message.channel.send("Only admins can use this command.");
 				return;
@@ -125,7 +134,6 @@ export const handleMessage = async (message: Discord.Message, handler: ServerHan
 			await message.channel.send("Rerunning initialization for this server and resetting channel permissions");
 			handler.initialize(true);
 			break;
-
-
+		}
 	}
 }
